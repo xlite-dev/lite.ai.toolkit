@@ -1,6 +1,6 @@
 
 
-##  <p align="center"> Lite.AI.ToolKit 🚀🚀🌟: A lite C++ toolkit of awesome AI models. </p>
+##  <p align="center"> Lit.AI.ToolKit 🚀🚀🌟: A lite C++ toolkit of awesome AI models. </p>
 
 
 <div id="lite.ai.toolkit-Introduction"></div>  
