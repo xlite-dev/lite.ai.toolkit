@@ -13,8 +13,8 @@ namespace trtcv
     class LITE_EXPORTS TRTYoloX : public BasicTRTHandler
     {
     public:
-        explicit TRTYoloX(const std::string &_onnx_path, unsigned int _num_threads = 1) :
-                BasicTRTHandler(_onnx_path, _num_threads)
+        explicit TRTYoloX(const std::string &_trt_model_path, unsigned int _num_threads = 1) :
+                BasicTRTHandler(_trt_model_path, _num_threads)
         {};
 
         ~TRTYoloX() override = default;
