@@ -132,13 +132,14 @@ static void test_tnn()
 static void test_tensorrt()
 {
 #ifdef ENABLE_TENSORRT
-    std::string onnx_path = "/home/lite.ai.toolkit/examples/hub/trt/yolox_s_fp32.engine";
-    std::string test_img_path = "/home/lite.ai.toolkit/examples/lite/resources/test_lite_yolox_2.jpg";
-    std::string save_img_path = "/home/lite.ai.toolkit/examples/logs/test_lite_yolox_trt_3.jpg";
+
+    std::string engine_path = "../../..//examples/hub/trt/yolox_s_fp32.engine";
+    std::string test_img_path = "../../..//examples/lite/resources/test_lite_yolox_2.jpg";
+    std::string save_img_path = "../../..//examples/logs/test_lite_yolox_trt_4.jpg";
 
     // 2. Test Specific Engine TensorRT
     lite::trt::cv::detection::YoloX  *yolox =
-            new lite::trt::cv::detection::YoloX (onnx_path);
+            new lite::trt::cv::detection::YoloX (engine_path);
 
     std::vector<lite::types::Boxf> detected_boxes;
     cv::Mat img_bgr = cv::imread(test_img_path);
@@ -148,8 +149,6 @@ static void test_tensorrt()
 
     cv::imwrite(save_img_path, img_bgr);
 
-    std::cout << "ONNXRuntime Version Detected Boxes Num: " << detected_boxes.size() << std::endl;
-
     delete yolox;
 #endif
 }
@@ -158,11 +157,11 @@ static void test_tensorrt()
 
 static void test_lite()
 {
-//  test_default();
-//  test_onnxruntime();
-//  test_mnn();
-//  test_ncnn();
-//  test_tnn();
+  test_default();
+  test_onnxruntime();
+  test_mnn();
+  test_ncnn();
+  test_tnn();
   test_tensorrt();
 }
 
