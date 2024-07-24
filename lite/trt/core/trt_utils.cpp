@@ -5,7 +5,7 @@
 #include "trt_utils.h"
 
 
-float* trtcv::utils::transform::create_tensor(const cv::Mat &mat,std::vector<int64_t> input_node_dims,unsigned int data_format){
+void trtcv::utils::transform::create_tensor(const cv::Mat &mat,std::vector<float> &input_vector,std::vector<int64_t> input_node_dims,unsigned int data_format){
     // make mat to float type's vector
 
     const unsigned int rows = mat.rows;
@@ -19,12 +19,11 @@ float* trtcv::utils::transform::create_tensor(const cv::Mat &mat,std::vector<int
     if (input_node_dims.size() != 4) throw std::runtime_error("dims mismatch.");
     if (input_node_dims.at(0) != 1) throw std::runtime_error("batch != 1");
 
-
     if (data_format == transform::CHW)
     {
         const unsigned int target_tensor_size = rows * cols * channels;
         // input vector's size
-        float* input_vector = new float [target_tensor_size];
+        input_vector.resize(target_tensor_size);
 
         for (int c = 0; c < channels; ++c)
         {
@@ -36,8 +35,12 @@ float* trtcv::utils::transform::create_tensor(const cv::Mat &mat,std::vector<int
                 }
             }
         }
-        return input_vector;
+
+    }else
+    {
+        throw std::runtime_error("data_format must be transform::CHW!");
     }
+
 }
 
 
