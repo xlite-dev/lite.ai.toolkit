@@ -140,30 +140,26 @@ void TRTYoloFaceV8::detect(const cv::Mat &mat, std::vector<lite::types::Boxf> &b
     cv::Mat normalized_image = normalize(mat);
 
     // 2.trans to input vector
-    auto input = trtcv::utils::transform::create_tensor(normalized_image,input_node_dims,trtcv::utils::transform::CHW);
+    std::vector<float> input;
+    trtcv::utils::transform::create_tensor(normalized_image,input,input_node_dims,trtcv::utils::transform::CHW);
 
     // 3. infer
-    cudaMemcpyAsync(buffers[0], input, input_node_dims[0] * input_node_dims[1] * input_node_dims[2] * input_node_dims[3] * sizeof(float),
+    cudaMemcpyAsync(buffers[0], input.data(), input_node_dims[0] * input_node_dims[1] * input_node_dims[2] * input_node_dims[3] * sizeof(float),
                     cudaMemcpyHostToDevice, stream);
     bool status = trt_context->enqueueV3(stream);
 
-    delete[] input;
-    input = nullptr;
 
     if (!status){
         std::cerr << "Failed to infer by TensorRT." << std::endl;
         return;
     }
 
-    float* output = new float[output_node_dims[0][0] * output_node_dims[0][1] * output_node_dims[0][2]];
+    std::vector<float> output(output_node_dims[0][0] * output_node_dims[0][1] * output_node_dims[0][2]);
 
-    cudaMemcpyAsync(output, buffers[1], output_node_dims[0][0] * output_node_dims[0][1] * output_node_dims[0][2] * sizeof(float),
+    cudaMemcpyAsync(output.data(), buffers[1], output_node_dims[0][0] * output_node_dims[0][1] * output_node_dims[0][2] * sizeof(float),
                     cudaMemcpyDeviceToHost, stream);
     // 4. generate box
-    generate_box(output,boxes,0.45f,0.5f);
+    generate_box(output.data(),boxes,0.45f,0.5f);
 
-    // free pointer
-    delete[] output;
-    output = nullptr;
 
 }

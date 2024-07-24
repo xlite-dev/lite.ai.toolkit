@@ -170,9 +170,9 @@ void TRTYoloX::generate_bboxes(const trtcv::TRTYoloX::YoloXScaleParams &scale_pa
         if (count > max_nms)
             break;
     }
-#if LITEORT_DEBUG
+#if LITETRT_DEBUG
     std::cout << "detected num_anchors: " << num_anchors << "\n";
-  std::cout << "generate_bboxes num: " << bbox_collection.size() << "\n";
+    std::cout << "generate_bboxes num: " << bbox_collection.size() << "\n";
 #endif
 
 }
@@ -203,15 +203,15 @@ void TRTYoloX::detect(const cv::Mat &mat, std::vector<types::Boxf> &detected_box
     normalized(mat_rs,mean_vals,scale_vals);
 
     //1. make the input
-    auto input = trtcv::utils::transform::create_tensor(mat_rs,input_node_dims,trtcv::utils::transform::CHW);
+    std::vector<float> input;
+    trtcv::utils::transform::create_tensor(mat_rs,input,input_node_dims,trtcv::utils::transform::CHW);
 
     //2. infer
-    cudaMemcpyAsync(buffers[0], input, input_node_dims[0] * input_node_dims[1] * input_node_dims[2] * input_node_dims[3] * sizeof(float),
+    cudaMemcpyAsync(buffers[0], input.data(), input_node_dims[0] * input_node_dims[1] * input_node_dims[2] * input_node_dims[3] * sizeof(float),
                     cudaMemcpyHostToDevice, stream);
 
     cudaStreamSynchronize(stream);
-    delete[] input;
-    input = nullptr;
+
 
 
     bool status = trt_context->enqueueV3(stream);
@@ -227,16 +227,15 @@ void TRTYoloX::detect(const cv::Mat &mat, std::vector<types::Boxf> &detected_box
     // get the first output dim
     auto pred_dims = output_node_dims[0];
 
-    float* output = new float[pred_dims[0] * pred_dims[1] * pred_dims[2]];
+    std::vector<float> output(pred_dims[0] * pred_dims[1] * pred_dims[2]);
 
-    cudaMemcpyAsync(output, buffers[1], pred_dims[0] * pred_dims[1] * pred_dims[2] * sizeof(float),
+    cudaMemcpyAsync(output.data(), buffers[1], pred_dims[0] * pred_dims[1] * pred_dims[2] * sizeof(float),
                     cudaMemcpyDeviceToHost, stream);
     cudaStreamSynchronize(stream);
 
     //3. generate the boxes
     std::vector<types::Boxf> bbox_collection;
-    generate_bboxes(scale_params, bbox_collection, output, score_threshold, img_height, img_width);
+    generate_bboxes(scale_params, bbox_collection, output.data(), score_threshold, img_height, img_width);
     nms(bbox_collection, detected_boxes, iou_threshold, topk, nms_type);
-    delete[] output;
-    output = nullptr;
+
 }
