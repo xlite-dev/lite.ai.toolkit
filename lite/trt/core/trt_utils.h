@@ -17,7 +17,7 @@ namespace trtcv
             {
                 CHW = 0, HWC =1
             };
-            LITE_EXPORTS float* create_tensor(const cv::Mat &mat,std::vector<int64_t> input_node_dims,unsigned int data_format = CHW);
+            LITE_EXPORTS void create_tensor(const cv::Mat &mat,std::vector<float> &input_vector,std::vector<int64_t> input_node_dims,unsigned int data_format = CHW);
 
 
         }
