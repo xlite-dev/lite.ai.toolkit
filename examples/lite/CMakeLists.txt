@@ -101,4 +101,5 @@ add_lite_executable(lite_yolov6 cv)
 add_lite_executable(lite_face_parsing_bisenet cv)
 add_lite_executable(lite_face_parsing_bisenet_dyn cv)
 add_lite_executable(lite_yolov8face cv)
+add_lite_executable(lite_yolov8 cv)
 
