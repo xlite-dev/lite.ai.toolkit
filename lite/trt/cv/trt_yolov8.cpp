@@ -130,7 +130,7 @@ void TRTYoloV8::detect(const cv::Mat &mat, std::vector<types::Boxf> &detected_bo
     cudaStreamSynchronize(stream);
 
     std::vector<types::Boxf> bbox_collection;
-    generate_bboxes(bbox_collection,output.data(),0.5f,img_height,img_width);
+    generate_bboxes(bbox_collection,output.data(),score_threshold,img_height,img_width);
     nms(bbox_collection, detected_boxes, iou_threshold, topk, nms_type);
 
 }
