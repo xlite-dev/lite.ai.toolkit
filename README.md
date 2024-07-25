@@ -413,10 +413,12 @@ The pretrained and converted ONNX files provide by lite.ai.toolkit are listed as
 
 <div id="lite.ai.toolkit-Examples-for-Lite.AI.ToolKit"></div>
 
+<!---
 <details>
 <summary> 🔑️ More Examples！Click here! </summary>    
+--->
 
-## Examples.
+## 🔑️ More Examples.
 
 More examples can be found at [examples](https://github.com/DefTruth/lite.ai.toolkit/tree/main/examples/lite/cv). 
 
@@ -1093,7 +1095,9 @@ auto *segment = new lite::cv::segmentation::FaceParsingBiSeNet(onnx_path); // 50
 auto *segment = new lite::cv::segmentation::FaceParsingBiSeNetDyn(onnx_path); // Dynamic Shape Inference.
 ```
 
-</details>
+<!---
+ </details>
+--->
 
 ## Citations 🎉🎉
 ```BibTeX
