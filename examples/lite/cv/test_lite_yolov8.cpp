@@ -11,7 +11,7 @@ static void test_tensorrt()
 #ifdef ENABLE_TENSORRT
     std::string engine_path = "../../..//examples/hub/trt/yolov8n_fp32.engine";
     std::string test_img_path = "../../..//examples/lite/resources/test_lite_yolov5_1.jpg";
-    std::string save_img_path = "../../..//examples/logs/test_lite_yolov8face_trtbbb111b.jpg";
+    std::string save_img_path = "../../..//examples/logs/test_lite_yolov8_trt_1.jpg";
 
     lite::trt::cv::detection::YOLOV8 *yolov8  = new lite::trt::cv::detection::YOLOV8(engine_path);
 
