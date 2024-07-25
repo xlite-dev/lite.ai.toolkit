@@ -19,16 +19,6 @@ namespace trtcv {
 
         ~TRTYoloV8() override = default;
 
-    private:
-        // nested classes
-        typedef struct {
-            float r;
-            int dw;
-            int dh;
-            int new_unpad_w;
-            int new_unpad_h;
-            bool flag;
-        } YoloV8ScaleParams;
 
     private:
         static constexpr const float mean_val = 0.f;
@@ -50,15 +40,12 @@ namespace trtcv {
         static constexpr const unsigned int max_nms = 30000;
 
     private:
-        void resize_unscale(const cv::Mat &mat,
-                            cv::Mat &mat_rs,
-                            int target_height,
-                            int target_width,
-                            YoloV8ScaleParams &scale_params);
 
-        void normalized(const cv::Mat &input_image);
+        void preprocess(cv::Mat &input_image);
 
-        void generate_bboxes(const YoloV8ScaleParams &scale_params,
+        void normalized(cv::Mat &input_image);
+
+        void generate_bboxes(
                              std::vector<types::Boxf> &bbox_collection,
                              float *output,
                              float score_threshold, int img_height,

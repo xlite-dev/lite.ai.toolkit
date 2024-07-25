@@ -6,52 +6,6 @@
 using trtcv::TRTYoloV8;
 
 
-void TRTYoloV8::resize_unscale(const cv::Mat &mat, cv::Mat &mat_rs,
-                               int target_height, int target_width,
-                               YoloV8ScaleParams &scale_params)
-{
-    if (mat.empty()) return;
-    int img_height = static_cast<int>(mat.rows);
-    int img_width = static_cast<int>(mat.cols);
-
-    mat_rs = cv::Mat(target_height, target_width, CV_8UC3,
-                     cv::Scalar(114, 114, 114));
-    // scale ratio (new / old) new_shape(h,w)
-    float w_r = (float) target_width / (float) img_width;
-    float h_r = (float) target_height / (float) img_height;
-    float r = std::min(w_r, h_r);
-    // compute padding
-    int new_unpad_w = static_cast<int>((float) img_width * r); // floor
-    int new_unpad_h = static_cast<int>((float) img_height * r); // floor
-    int pad_w = target_width - new_unpad_w; // >=0
-    int pad_h = target_height - new_unpad_h; // >=0
-
-    int dw = pad_w / 2;
-    int dh = pad_h / 2;
-
-    // resize with unscaling
-    cv::Mat new_unpad_mat;
-    // cv::Mat new_unpad_mat = mat.clone(); // may not need clone.
-    cv::resize(mat, new_unpad_mat, cv::Size(new_unpad_w, new_unpad_h));
-    new_unpad_mat.copyTo(mat_rs(cv::Rect(dw, dh, new_unpad_w, new_unpad_h)));
-
-    // record scale params.
-    scale_params.r = r;
-    scale_params.dw = dw;
-    scale_params.dh = dh;
-    scale_params.new_unpad_w = new_unpad_w;
-    scale_params.new_unpad_h = new_unpad_h;
-    scale_params.flag = true;
-}
-
-
-void TRTYoloV8::normalized(const cv::Mat &input_image) {
-
-    cv::cvtColor(input_image,input_image,cv::COLOR_BGR2RGB);
-    input_image.convertTo(input_image,CV_32F,1.0 / 255.0,0);
-}
-
-
 void TRTYoloV8::nms(std::vector<types::Boxf> &input, std::vector<types::Boxf> &output,
                     float iou_threshold, unsigned int topk, unsigned int nms_type)
 {
@@ -60,47 +14,124 @@ void TRTYoloV8::nms(std::vector<types::Boxf> &input, std::vector<types::Boxf> &o
     else lite::utils::hard_nms(input, output, iou_threshold, topk);
 }
 
-void TRTYoloV8::generate_bboxes(const trtcv::TRTYoloV8::YoloV8ScaleParams &scale_params,
-                                std::vector<types::Boxf> &bbox_collection, float *output, float score_threshold,
+void TRTYoloV8::generate_bboxes(std::vector<types::Boxf> &bbox_collection, float* output, float score_threshold,
                                 int img_height, int img_width) {
-    auto pred_dims = output_node_dims[0]; // 获取输出的维度 这里是 1 * 84 * 8400 不能直接炒上面yolox和yolov5的代码
-    const unsigned int num_classes = pred_dims.at(1) - 4; // n = ?
-    const unsigned int num_anchors = pred_dims.at(2);
+    auto pred_dims = output_node_dims[0];
+    const unsigned int num_anchors = pred_dims[2]; // 8400
+    const unsigned int num_classes = pred_dims[1] - 4; // 80
 
-
-    float r_ = scale_params.r;
-    int dw_ = scale_params.dw;
-    int dh_ = scale_params.dh;
+    float x_factor = float(img_width) / input_node_dims[3];
+    float y_factor = float(img_height) / input_node_dims[2];
 
     bbox_collection.clear();
-
     unsigned int count = 0;
 
-    // yolov8 修改了 他的输出维度 他把类别置信度的最大值和分类的值混在一起了
+    for (unsigned int i = 0; i < num_anchors; ++i) {
 
-    for (unsigned int i = 0; i < num_anchors; ++i)
-    {
-        float tmp_conf_score= output[i * num_classes + 4 + i]; //得到xywh之后的第一个类别置信度
+        std::vector<float> class_scores(num_classes);
+        for (unsigned int j = 0; j < num_classes; ++j) {
+            class_scores[j] = output[(4 + j) * num_anchors + i];
+        }
 
+        auto max_it = std::max_element(class_scores.begin(), class_scores.end());
+        float max_cls_conf = *max_it;
+        unsigned int label = std::distance(class_scores.begin(), max_it);
+
+        float conf = max_cls_conf;
+        if (conf < score_threshold) continue;
+
+        float cx = output[0 * num_anchors + i];
+        float cy = output[1 * num_anchors + i];
+        float w = output[2 * num_anchors + i];
+        float h = output[3 * num_anchors + i];
+
+        float x1 = (cx - w / 2.f)  * x_factor;
+        float y1 = (cy - h / 2.f)  * y_factor;
+
+        w = w * x_factor;
+        h = h * y_factor;
+
+        float x2 = x1 + w ;
+        float y2 = y1 + h;
+
+        types::Boxf box;
+        box.x1 = std::max(0.f, x1);
+        box.y1 = std::max(0.f, y1);
+        box.x2 = std::min(x2, (float) img_width - 1.f);
+        box.y2 = std::min(y2, (float) img_height - 1.f);
+        box.score = conf;
+        box.label = label;
+        box.label_text = class_names[label];
+        box.flag = true;
+        bbox_collection.push_back(box);
+
+        count += 1;
+        if (count > max_nms)
+            break;
     }
 
+#if LITETRT_DEBUG
+    std::cout << "detected num_anchors: " << num_anchors << "\n";
+    std::cout << "generate_bboxes num: " << bbox_collection.size() << "\n";
+#endif
+}
 
+void TRTYoloV8::preprocess(cv::Mat &input_image) {
 
+    // Convert color space from BGR to RGB
+    cv::cvtColor(input_image, input_image, cv::COLOR_BGR2RGB);
+
+    // Resize image
+    cv::resize(input_image, input_image, cv::Size(input_node_dims[2], input_node_dims[3]), 0, 0, cv::INTER_LINEAR);
+
+    // Normalize image
+    input_image.convertTo(input_image, CV_32F, scale_val, mean_val);
 }
 
 
 void TRTYoloV8::detect(const cv::Mat &mat, std::vector<types::Boxf> &detected_boxes, float score_threshold,
                        float iou_threshold, unsigned int topk, unsigned int nms_type) {
 
+    if (mat.empty()) return;
+    int img_height = static_cast<int>(mat.rows);
+    int img_width = static_cast<int>(mat.cols);
 
+    // resize & unscale
+    cv::Mat mat_rs = mat.clone();
 
+    preprocess(mat_rs);
 
+    //1. make the input
+    std::vector<float> input;
+    trtcv::utils::transform::create_tensor(mat_rs,input,input_node_dims,trtcv::utils::transform::CHW);
 
+    //2. infer
+    cudaMemcpyAsync(buffers[0], input.data(), input_node_dims[0] * input_node_dims[1] * input_node_dims[2] * input_node_dims[3] * sizeof(float),
+                    cudaMemcpyHostToDevice, stream);
 
+    cudaStreamSynchronize(stream);
 
+    bool status = trt_context->enqueueV3(stream);
+    cudaStreamSynchronize(stream);
+    if (!status){
+        std::cerr << "Failed to infer by TensorRT." << std::endl;
+        return;
+    }
 
+    cudaStreamSynchronize(stream);
 
+    // get the first output dim
+    auto pred_dims = output_node_dims[0];
 
+    std::vector<float> output(pred_dims[0] * pred_dims[1] * pred_dims[2]);
+
+    cudaMemcpyAsync(output.data(), buffers[1], pred_dims[0] * pred_dims[1] * pred_dims[2] * sizeof(float),
+                    cudaMemcpyDeviceToHost, stream);
+    cudaStreamSynchronize(stream);
+
+    std::vector<types::Boxf> bbox_collection;
+    generate_bboxes(bbox_collection,output.data(),0.5f,img_height,img_width);
+    nms(bbox_collection, detected_boxes, iou_threshold, topk, nms_type);
 
 }
 
