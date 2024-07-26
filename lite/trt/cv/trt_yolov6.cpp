@@ -1,5 +1,5 @@
 //
-// Created by root on 7/26/24.
+// Created by wangzijian on 7/26/24.
 //
 
 #include "trt_yolov6.h"
