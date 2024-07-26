@@ -126,6 +126,7 @@
 #include "lite/trt/cv/trt_yolov5.h"
 #include "lite/trt/cv/trt_yolox.h"
 #include "lite/trt/cv/trt_yolov8.h"
+#include "lite/trt/cv/trt_yolov6.h"
 #endif
 
 // ENABLE_MNN
@@ -681,6 +682,7 @@ namespace lite{
             typedef trtcv::TRTYoloV5 _TRT_YOLOv5;
             typedef trtcv::TRTYoloV8 _TRT_YOLOv8;
             typedef trtcv::TRTYoloX _TRT_YoloX;
+            typedef trtcv::TRTYoloV6 _TRT_YOLOv6;
             namespace classification
             {
 
@@ -690,6 +692,7 @@ namespace lite{
                 typedef _TRT_YOLOv5 YOLOV5;
                 typedef _TRT_YOLOv8 YOLOV8;
                 typedef _TRT_YoloX YoloX;
+                typedef _TRT_YOLOv6 YOLOV6;
             }
             namespace face
             {
