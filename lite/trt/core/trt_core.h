@@ -15,6 +15,7 @@ namespace trtcv{
     class LITE_EXPORTS TRTYoloX;      // [3] * reference: https://github.com/Megvii-BaseDetection/YOLOX
     class LITE_EXPORTS TRTYoloV8;     // [4] * reference: https://github.com/ultralytics/ultralytics/tree/main
     class LITE_EXPORTS TRTYoloV6;     // [5] * reference: https://github.com/meituan/YOLOv6
+    class LITE_EXPORTS TRTYOLO5Face;     // [6] * reference: https://github.com/deepcam-cn/yolov5-face
 }
 
 namespace trtcv{
