@@ -153,6 +153,12 @@ void TRTYOLO5Face::generate_bboxes_kps(const trtcv::TRTYOLO5Face::YOLOv5BlazeFac
 }
 
 
+void TRTYOLO5Face::normalized(cv::Mat &input_image) {
+    cv::cvtColor(input_image,input_image,cv::COLOR_BGR2RGB);
+    input_image.convertTo(input_image,CV_32F,scale_val,mean_val);
+}
+
+
 void TRTYOLO5Face::detect(const cv::Mat &mat, std::vector<types::BoxfWithLandmarks> &detected_boxes_kps,
                           float score_threshold, float iou_threshold, unsigned int topk) {
     if (mat.empty()) return;

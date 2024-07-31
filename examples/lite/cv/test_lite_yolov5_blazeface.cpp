@@ -88,7 +88,7 @@ static void test_tnn()
 
 static void test_tensorrt()
 {
-#ifdef ENABLE_ONNXRUNTIME
+#ifdef ENABLE_TENSORRT
     std::string onnx_path = "../../../examples/hub/trt/yolov5face-fp32.engine";
     std::string test_img_path = "../../../examples/lite/resources/test_lite_face_detector.jpg";
     std::string save_img_path = "../../../examples/logs/test_lite_yolov5_blazeface_trt_3.jpg";
