@@ -12,4 +12,10 @@ namespace ortcv
   namespace types = lite::types;
 }
 
+namespace ortsd
+{
+  namespace types = lite::types;
+}
+
+
 #endif //LITE_AI_ORT_CORE_ORT_TYPES_H
