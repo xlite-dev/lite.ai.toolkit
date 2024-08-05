@@ -6,7 +6,7 @@
 
 static void test_default()
 {
-    std::string onnx_path = "/home/lite.ai.toolkit/examples/hub/onnx/sd/clip_text_model_vitb32.onnx";
+    std::string onnx_path = "../../../examples/hub/onnx/sd/clip_text_model_vitb32.onnx";
 
     lite::onnxruntime::sd::text_encoder::Clip *clip = new lite::onnxruntime::sd::text_encoder::Clip(onnx_path);
 
