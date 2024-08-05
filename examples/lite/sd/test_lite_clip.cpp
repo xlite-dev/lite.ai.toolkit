@@ -6,13 +6,13 @@
 
 static void test_default()
 {
-    std::string onnx_path = "../../../examples/hub/onnx/sd/clip_text_model_vitb32.onnx";
+    std::string onnx_path = "/home/lite.ai.toolkit/examples/hub/onnx/sd/clip_text_model_vitb32.onnx";
 
     lite::onnxruntime::sd::text_encoder::Clip *clip = new lite::onnxruntime::sd::text_encoder::Clip(onnx_path);
 
-    std::vector<std::string> input_vector = {"i am not good at cpp"};
+    std::vector<std::string> input_vector = {"i am not good at cpp","goi ofg go !"};
 
-    std::vector<float> output;
+    std::vector<std::vector<float>> output;
 
     clip->inference(input_vector,output);
 
