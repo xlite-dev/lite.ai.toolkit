@@ -57,7 +57,15 @@ void BasicOrtHandler::initialize_handler()
   input_tensor_size = 1;
   input_node_dims = tensor_info.GetShape();
   for (unsigned int i = 0; i < input_node_dims.size(); ++i)
-    input_tensor_size *= input_node_dims.at(i);
+  {
+      if (input_node_dims.at(i) == -1)
+      {
+          input_tensor_size = input_tensor_size;
+      }else
+      {
+          input_tensor_size *= input_node_dims.at(i);
+      }
+  }
   input_values_handler.resize(input_tensor_size);
   // 4. output names & output dimms
   num_outputs = ort_session->GetOutputCount();
