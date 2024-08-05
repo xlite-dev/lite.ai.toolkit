@@ -29,8 +29,6 @@ namespace ortsd
 
         void inference(std::vector<std::string> input,std::vector<float> &output);
 
-
-
         Ort::Value transform(const cv::Mat &mat);
     };
 }
