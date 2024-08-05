@@ -127,6 +127,11 @@ namespace ortnlp
   class LITE_EXPORTS ChineseOCRLite; // todo
 }
 
+namespace ortsd
+{
+    class LITE_EXPORTS Clip; // [1] * reference: https://github.com/openai/CLIP
+}
+
 namespace ortcv
 {
   using core::BasicOrtHandler;
@@ -142,4 +147,11 @@ namespace ortasr
   using core::BasicOrtHandler;
   using core::BasicMultiOrtHandler;
 }
+
+namespace ortsd
+{
+    using core::BasicOrtHandler;
+    using core::BasicMultiOrtHandler;
+}
+
 #endif //LITE_AI_ORT_ORT_CORE_H
