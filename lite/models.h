@@ -113,6 +113,7 @@
 #include "lite/ort/cv/face_parsing_bisenet.h"
 #include "lite/ort/cv/face_parsing_bisenet_dyn.h"
 #include "lite/ort/cv/yolofacev8.h"
+#include "lite/ort/sd/clip.h"
 
 #endif
 
@@ -665,6 +666,14 @@ namespace lite
         typedef _ONNXBackgroundMattingV2Dyn BackgroundMattingV2Dyn;
         typedef _ONNXMobileHumanMatting MobileHumanMatting;
       }
+    }
+    namespace sd
+    {
+        typedef ortsd::Clip _ONNXClip;
+        namespace text_encoder
+        {
+            typedef _ONNXClip Clip;
+        }
     }
 
   }
