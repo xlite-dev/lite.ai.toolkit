@@ -1,6 +1,7 @@
 //
 // Created by wangzijian on 8/5/24.
 //
+// reference: https://github.com/leejet/stable-diffusion.cpp
 
 #ifndef LITE_AI_TOOLKIT_TOKENIZER_H
 #define LITE_AI_TOOLKIT_TOKENIZER_H
