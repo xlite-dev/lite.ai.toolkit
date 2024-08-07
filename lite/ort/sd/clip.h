@@ -44,11 +44,8 @@ namespace ortsd
     public:
         void encode_text(std::vector<std::string> input_text, std::vector<std::vector<int>> &output);
 
-        void inference(std::vector<int> input,std::vector<float> &output);
-
         void inference(std::vector<std::string> input,std::vector<std::vector<float>> &output);
 
-        Ort::Value transform(const cv::Mat &mat);
     };
 }
 
