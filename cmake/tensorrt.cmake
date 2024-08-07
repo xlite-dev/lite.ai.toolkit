@@ -44,13 +44,16 @@ file(GLOB TENSORRT_CORE_SRCS ${CMAKE_SOURCE_DIR}/lite/trt/core/*.cpp)
 file(GLOB TENSORRT_CV_SRCS ${CMAKE_SOURCE_DIR}/lite/trt/cv/*.cpp)
 file(GLOB TENSORRT_NLP_SRCS ${CMAKE_SOURCE_DIR}/lite/trt/nlp/*.cpp)
 file(GLOB TENSORRT_ASR_SRCS ${CMAKE_SOURCE_DIR}/lite/trt/asr/*.cpp)
+file(GLOB TENSORRT_SD_SRCS ${CMAKE_SOURCE_DIR}/lite/trt/sd/*.cpp)
+
 # 2. glob headers files
 file(GLOB TENSORRT_CORE_HEAD ${CMAKE_SOURCE_DIR}/lite/trt/core/*.h)
 file(GLOB TENSORRT_CV_HEAD ${CMAKE_SOURCE_DIR}/lite/trt/cv/*.h)
 file(GLOB TENSORRT_NLP_HEAD ${CMAKE_SOURCE_DIR}/lite/trt/nlp/*.h)
 file(GLOB TENSORRT_ASR_HEAD ${CMAKE_SOURCE_DIR}/lite/trt/asr/*.h)
+file(GLOB TENSORRT_SD_HEAD ${CMAKE_SOURCE_DIR}/lite/trt/sd/*.h)
 
-set(TRT_SRCS ${TENSORRT_CV_SRCS} ${TENSORRT_NLP_SRCS} ${TENSORRT_ASR_SRCS} ${TENSORRT_CORE_SRCS})
+set(TRT_SRCS ${TENSORRT_CV_SRCS} ${TENSORRT_NLP_SRCS} ${TENSORRT_ASR_SRCS} ${TENSORRT_CORE_SRCS} ${TENSORRT_SD_SRCS})
 # 3. copy
 message("[Lite.AI.Toolkit][I] Installing Lite.AI.ToolKit Headers for TensorRT Backend ...")
 # "INSTALL" can copy all files from the list to the specified path.
@@ -59,3 +62,5 @@ file(INSTALL ${TENSORRT_CORE_HEAD} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/l
 file(INSTALL ${TENSORRT_CV_HEAD} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lite/trt/cv)
 file(INSTALL ${TENSORRT_ASR_HEAD} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lite/trt/asr)
 file(INSTALL ${TENSORRT_NLP_HEAD} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lite/trt/nlp)
+file(INSTALL ${TENSORRT_SD_HEAD} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lite/trt/sd)
+
