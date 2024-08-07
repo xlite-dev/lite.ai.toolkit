@@ -115,8 +115,17 @@ void TRTClip::inference(std::vector<std::string> input, std::vector<std::vector<
     cudaMemcpyAsync(output_trt.data(), buffers[1], batch * output_tensor_size * sizeof(float),
                     cudaMemcpyDeviceToHost, stream);
 
+    for (int i = 0 ; i < batch ; ++i)
+    {
+        std::vector<float> temp;
+        for (int j = 0 ; j < 512 ; ++j)
+        {
+            temp.push_back(text_feature_ptr[ i * 512 + j]);
+        }
+        output.push_back(temp);
+        temp.clear();
+    }
 
-
-    std::cout<<"inference done!"<<std::endl;
+    std::cout<<"trt clip inference done!"<<std::endl;
 
 }

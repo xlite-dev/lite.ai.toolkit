@@ -6,7 +6,7 @@
 
 static void test_default()
 {
-    std::string onnx_path = "/home/lite.ai.toolkit/examples/hub/onnx/sd/clip_text_model_vitb32.onnx";
+    std::string onnx_path = "../../../examples/hub/onnx/sd/clip_text_model_vitb32.onnx";
 
     lite::onnxruntime::sd::text_encoder::Clip *clip = new lite::onnxruntime::sd::text_encoder::Clip(onnx_path);
 
@@ -23,7 +23,7 @@ static void test_default()
 
 static void test_tensorrt()
 {
-    std::string onnx_path = "/home/lite.ai.toolkit/examples/hub/trt/clip_text_model.engine";
+    std::string onnx_path = "../../../examples/hub/trt/clip_text_model.engine";
 
     lite::trt::sd::text_encoder::Clip *clip = new lite::trt::sd::text_encoder::Clip(onnx_path,1);
 
@@ -33,7 +33,6 @@ static void test_tensorrt()
 
     clip->inference(input_vector,output);
 
-
     delete clip;
 
 }
@@ -42,7 +41,7 @@ static void test_tensorrt()
 
 static void test_lite()
 {
-//    test_default();
+    test_default();
 
     test_tensorrt();
 }
