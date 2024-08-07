@@ -22,6 +22,10 @@ namespace trtcv{
     using trtcore::BasicTRTHandler;
 }
 
+namespace trtsd{
+    class LITE_EXPORTS TRTClip;
+}
+
 
 
 #endif //LITE_AI_TOOLKIT_TRT_CORE_H
