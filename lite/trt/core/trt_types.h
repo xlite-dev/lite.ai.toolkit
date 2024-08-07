@@ -10,5 +10,10 @@ namespace trtcv{
     namespace types = lite::types;
 }
 
+namespace trtsd{
+    namespace types = lite::types;
+}
+
+
 
 #endif //LITE_AI_TOOLKIT_TRT_TYPES_H
