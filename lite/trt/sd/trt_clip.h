@@ -11,7 +11,7 @@ namespace trtsd
 {
     class TRTClip{
     public:
-        TRTClip(const std::string &_onnx_path, unsigned int _num_threads = 1 );
+        TRTClip(const std::string &_onnx_path);
         ~TRTClip();
 
     private:
