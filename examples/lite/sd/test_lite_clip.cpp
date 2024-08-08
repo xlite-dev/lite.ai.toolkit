@@ -23,9 +23,9 @@ static void test_default()
 
 static void test_tensorrt()
 {
-    std::string onnx_path = "../../../examples/hub/trt/clip_text_model.engine";
+    std::string engine_path = "../../../examples/hub/trt/dynamic_text_model_fp32.engine";
 
-    lite::trt::sd::text_encoder::Clip *clip = new lite::trt::sd::text_encoder::Clip(onnx_path,1);
+    lite::trt::sd::text_encoder::Clip *clip = new lite::trt::sd::text_encoder::Clip(engine_path);
 
     std::vector<std::string> input_vector = {"i am not good at cpp","goi ofg go !"};
 
