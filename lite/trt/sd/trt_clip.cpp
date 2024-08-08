@@ -16,7 +16,7 @@ TRTClip::~TRTClip() {
     cudaStreamDestroy(stream);
 }
 
-TRTClip::TRTClip(const std::string &engine_path, unsigned int _num_threads) {
+TRTClip::TRTClip(const std::string &engine_path) {
     trt_model_path = engine_path.c_str();
     std::ifstream file(trt_model_path, std::ios::binary);
 
@@ -99,9 +99,18 @@ void TRTClip::inference(std::vector<std::string> input, std::vector<std::vector<
     cudaMalloc(&buffers[1],batch * output_tensor_size * sizeof (float));
     trt_context->setTensorAddress(output_names,buffers[1]);
 
+    std::vector<int> input_dims = { static_cast<int>(batch), 77 };
+
     // infer
-    cudaMemcpyAsync(buffers[0], flat_output_encode.data(), flat_output_encode.size() * sizeof(float),
+    cudaMemcpyAsync(buffers[0], flat_output_encode.data(), flat_output_encode.size() * sizeof(int32_t ),
                     cudaMemcpyHostToDevice, stream);
+    // set input shape for dynamic shape
+    nvinfer1::Dims inputDims;
+    inputDims.nbDims = 2;
+    inputDims.d[0] = batch;
+    inputDims.d[1] = 77;
+    // input name should be equal
+    trt_context->setInputShape("TEXT", inputDims);
 
     bool status = trt_context->enqueueV3(stream);
 
@@ -120,7 +129,7 @@ void TRTClip::inference(std::vector<std::string> input, std::vector<std::vector<
         std::vector<float> temp;
         for (int j = 0 ; j < 512 ; ++j)
         {
-            temp.push_back(text_feature_ptr[ i * 512 + j]);
+            temp.push_back(output_trt[ i * 512 + j]);
         }
         output.push_back(temp);
         temp.clear();
