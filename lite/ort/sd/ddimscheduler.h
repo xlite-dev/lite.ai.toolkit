@@ -2,6 +2,8 @@
 // Created by TalkUHulk on 2024/4/25.
 //
 
+// reference by https://github.com/TalkUHulk/ddim_scheduler_cpp.git
+
 #ifndef DDIM_SCHEDULER_CPP_DDIMSCHEDULER_HPP
 #define DDIM_SCHEDULER_CPP_DDIMSCHEDULER_HPP
 
