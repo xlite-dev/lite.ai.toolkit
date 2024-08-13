@@ -45,7 +45,7 @@ function(add_lite_ai_toolkit_shared_library version soversion)
     if (ENABLE_ONNXRUNTIME)
         include(cmake/onnxruntime.cmake)
         set(LITE_SRCS ${LITE_SRCS} ${ORT_SRCS})
-        set(LITE_DEPENDENCIES ${LITE_DEPENDENCIES} onnxruntime)
+        set(LITE_DEPENDENCIES ${LITE_DEPENDENCIES} onnxruntime libddim_scheduler_cpp.so)
     endif ()
 
     if (ENABLE_TENSORRT)
