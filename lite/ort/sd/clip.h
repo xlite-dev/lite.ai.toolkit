@@ -32,6 +32,9 @@ namespace ortsd
         const char *log_id = nullptr;
         bool context_is_update = false;
         const unsigned int num_threads; // initialize at runtime.
+        const int input_axes = 77;
+        const int output_tensor_size = 77 * 768;
+        const int end_flag_num = 49407;
 
         std::vector<const char *> input_node_names = {
                 "input_ids"
