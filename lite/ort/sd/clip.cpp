@@ -83,18 +83,18 @@ void Clip::inference(std::vector<std::string> input, std::vector<std::vector<flo
 
     const float *text_feature_ptr = ort_outputs[0].GetTensorMutableData<float>();
 
+
+    // update to [b,77,768]
     for (int i = 0 ; i < batch ; ++i)
     {
         std::vector<float> temp;
-        for (int j = 0 ; j < 512 ; ++j)
+        for (int j = 0 ; j < 77 * 768  ; ++j)
         {
-            temp.push_back(text_feature_ptr[ i * 512 + j]);
+            temp.push_back(text_feature_ptr[ i * 77 * 768 + j]);
         }
         output.push_back(temp);
         temp.clear();
     }
-
-
 
 }
 

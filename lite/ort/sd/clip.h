@@ -34,11 +34,11 @@ namespace ortsd
         const unsigned int num_threads; // initialize at runtime.
 
         std::vector<const char *> input_node_names = {
-                "TEXT"
+                "input_ids"
         };
 
         std::vector<const char *> output_node_names = {
-                "TEXT_EMBEDDING"
+                "text_embeddings"
         };
 
     public:
