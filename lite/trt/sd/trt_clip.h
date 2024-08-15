@@ -25,9 +25,12 @@ namespace trtsd
 
         std::vector<int64_t> input_node_dims;
         std::vector<std::vector<int64_t>> output_node_dims;
-        std::size_t output_tensor_size = 512;
-        const char * input_names = "TEXT";
-        const char * output_names = "TEXT_EMBEDDING";
+        const int output_tensor_size = 77 * 768;
+        const int input_axes = 77;
+        const char * input_names = "input_ids";
+        const char * output_names = "text_embeddings";
+        const int end_flag_num = 49407;
+
 
 
         const char* trt_model_path = nullptr;
