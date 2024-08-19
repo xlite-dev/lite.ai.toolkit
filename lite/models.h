@@ -114,6 +114,7 @@
 #include "lite/ort/cv/face_parsing_bisenet_dyn.h"
 #include "lite/ort/cv/yolofacev8.h"
 #include "lite/ort/sd/clip.h"
+#include "lite/ort/sd/unet.h"
 
 #endif
 
@@ -671,9 +672,14 @@ namespace lite
     namespace sd
     {
         typedef ortsd::Clip _ONNXClip;
+        typedef ortsd::UNet _ONNXUNet;
         namespace text_encoder
         {
             typedef _ONNXClip Clip;
+        }
+        namespace denoise
+        {
+            typedef _ONNXUNet UNet;
         }
     }
 
