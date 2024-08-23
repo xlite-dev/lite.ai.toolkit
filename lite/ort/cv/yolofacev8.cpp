@@ -153,32 +153,6 @@ void YoloFaceV8::generate_box(std::vector<Ort::Value> &ort_outputs,
 }
 
 
-void save_tensor_to_file(const Ort::Value& tensor, const std::string& filename) {
-    // 获取张量的类型和形状信息
-    auto type_and_shape_info = tensor.GetTensorTypeAndShapeInfo();
-    std::vector<int64_t> shape = type_and_shape_info.GetShape();
-    size_t element_count = type_and_shape_info.GetElementCount();
-
-    ONNXTensorElementDataType type = type_and_shape_info.GetElementType();
-    if (type != ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT) {
-        std::cerr << "Unsupported tensor data type. Only float tensors are supported." << std::endl;
-        return;
-    }
-
-    const float* pdata = tensor.GetTensorData<float>();
-
-    std::ofstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Could not open file for writing: " << filename << std::endl;
-        return;
-    }
-
-    for (size_t i = 0; i < element_count; ++i) {
-        file << pdata[i] << "\n";
-    }
-    file.close();
-}
-
 
 void YoloFaceV8::detect(const cv::Mat &mat,std::vector<lite::types::Boxf> &boxes,
                         float conf_threshold, float iou_threshold) {
