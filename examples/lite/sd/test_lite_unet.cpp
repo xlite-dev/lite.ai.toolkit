@@ -3,10 +3,12 @@
 //
 
 #include "lite/lite.h"
-
+#include "chrono"
 
 static void test_default()
 {
+    auto start = std::chrono::high_resolution_clock::now();
+
     std::string engine_path = "/home/lite.ai.toolkit/examples/hub/onnx/sd/unet_model.onnx";
 
     lite::onnxruntime::sd::denoise::UNet *unet = new lite::onnxruntime::sd::denoise::UNet(engine_path);
@@ -18,6 +20,13 @@ static void test_default()
     std::vector<std::vector<float>> output;
 
     unet->inference(input_vector,output);
+
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+    std::cout << "耗时: " << duration << " 毫秒" << std::endl;
+
 
     delete unet;
 
