@@ -10,9 +10,6 @@
 #include <iostream>
 #include <vector>
 #include <string>
-
-
-
 namespace Scheduler {
 
 #if defined(_MSC_VER)
@@ -40,13 +37,13 @@ namespace Scheduler {
         ~DDIMScheduler();
 
         // Sets the discrete timesteps used for the diffusion chain (to be run before inference).
-        [[nodiscard]] int set_timesteps(int num_inference_steps);
+        int set_timesteps(int num_inference_steps);
 
         void get_timesteps(std::vector<int> &dst);
 
-        [[nodiscard]] float get_init_noise_sigma() const;
+        float get_init_noise_sigma() const;
 
-        [[nodiscard]] int step(std::vector<float> &model_output, const std::vector<int> &model_output_size,
+        int step(std::vector<float> &model_output, const std::vector<int> &model_output_size,
                  std::vector<float> &sample, const std::vector<int> &sample_size,
                  std::vector<float> &prev_sample,
                  int timestep, float eta = 0.0, bool use_clipped_model_output = false);
