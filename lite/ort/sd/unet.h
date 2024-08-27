@@ -22,8 +22,10 @@ namespace ortsd
         Ort::Env ort_env;
         Ort::Session *ort_session = nullptr;
         Ort::AllocatorWithDefaultOptions allocator;
-        Ort::MemoryInfo memory_info_handler = Ort::MemoryInfo::CreateCpu(
-                OrtArenaAllocator, OrtMemTypeDefault);
+        Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+
+//        Ort::MemoryInfo memory_info_handler = Ort::MemoryInfo::CreateCpu(
+//                OrtArenaAllocator, OrtMemTypeDefault);
 
         unsigned int num_inputs = 3;
         const LITEORT_CHAR *onnx_path = nullptr;
@@ -42,7 +44,8 @@ namespace ortsd
                 "latent"
         };
 
-
+    private:
+        void inference_full_test(std::vector<std::string> input,std::vector<std::vector<float>> &output);
 
     public:
         void inference(std::vector<std::string> input,std::vector<std::vector<float>> &output);
