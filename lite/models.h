@@ -115,7 +115,7 @@
 #include "lite/ort/cv/yolofacev8.h"
 #include "lite/ort/sd/clip.h"
 #include "lite/ort/sd/unet.h"
-
+#include "lite/ort/sd/vae.h"
 #endif
 
 
@@ -673,6 +673,7 @@ namespace lite
     {
         typedef ortsd::Clip _ONNXClip;
         typedef ortsd::UNet _ONNXUNet;
+        typedef ortsd::Vae _ONNXVae;
         namespace text_encoder
         {
             typedef _ONNXClip Clip;
@@ -680,6 +681,10 @@ namespace lite
         namespace denoise
         {
             typedef _ONNXUNet UNet;
+        }
+        namespace image_decoder
+        {
+            typedef _ONNXVae Vae;
         }
     }
 
