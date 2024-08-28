@@ -251,11 +251,11 @@ void UNet::inference_full_test(std::vector<std::string> input, std::vector<std::
     scheduler.get_timesteps(timesteps);
     auto init_noise_sigma = scheduler.get_init_noise_sigma();
 
-//    std::vector<float> latents(1 * 4 * 64 * 64);
-//    generate_latents(latents, 1, 4, 64, 64, init_noise_sigma);
+    std::vector<float> latents(1 * 4 * 64 * 64);
+    generate_latents(latents, 1, 4, 64, 64, init_noise_sigma);
 
     // 使用方法
-    std::vector<float> latents = read_latent_data("/home/lite.ai.toolkit/latent_data.bin", 1 * 4 * 64 * 64);
+//    std::vector<float> latents = read_latent_data("/home/lite.ai.toolkit/latent_data.bin", 1 * 4 * 64 * 64);
     latents.insert(latents.end(), latents.begin(), latents.end());
 
     // 启动time step循环
@@ -397,8 +397,6 @@ void UNet::inference_full_test(std::vector<std::string> input, std::vector<std::
         save_output_as_image(latents, filename);
         save_to_bin(latents, "/home/lite.ai.toolkit/final_latent_data.bin");
         latents.insert(latents.end(), latents.begin(), latents.end());
-
-
 
     }
 
