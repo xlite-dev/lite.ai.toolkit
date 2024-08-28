@@ -132,6 +132,7 @@
 #include "lite/trt/cv/trt_yolov5_blazeface.h"
 #include "lite/trt/sd/trt_clip.h"
 #include "lite/trt/sd/trt_vae.h"
+#include "lite/trt/sd/trt_unet.h"
 #endif
 
 // ENABLE_MNN
@@ -729,7 +730,7 @@ namespace lite{
         }
         namespace sd
         {
-
+            typedef trtsd::TRTUNet _TRT_UNet;
             typedef trtsd::TRTClip _TRT_Clip;
             typedef trtsd::TRTVae _TRT_Vae;
             namespace text_encoder
@@ -739,6 +740,10 @@ namespace lite{
             namespace image_decoder
             {
                 typedef _TRT_Vae Vae;
+            }
+            namespace denoise
+            {
+                typedef _TRT_UNet UNet;
             }
         }
     }
