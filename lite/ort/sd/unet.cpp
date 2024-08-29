@@ -240,6 +240,26 @@ void save_to_bin(const std::vector<float>& data, const std::string& filename) {
     }
 }
 
+std::vector<float> trt_load_from_bin2(const std::string& filename) {
+    std::ifstream infile(filename, std::ios::in | std::ios::binary);
+    std::vector<float> data;
+
+    if (infile.is_open()) {
+        infile.seekg(0, std::ios::end);
+        size_t size = infile.tellg();
+        infile.seekg(0, std::ios::beg);
+
+        data.resize(size / sizeof(float));
+        infile.read(reinterpret_cast<char*>(data.data()), size);
+        infile.close();
+    } else {
+        std::cerr << "Failed to open file: " << filename << std::endl;
+    }
+
+    return data;
+}
+
+
 
 void UNet::inference_full_test(std::vector<std::string> input, std::vector<std::vector<float>> &output) {
 
@@ -251,22 +271,27 @@ void UNet::inference_full_test(std::vector<std::string> input, std::vector<std::
     scheduler.get_timesteps(timesteps);
     auto init_noise_sigma = scheduler.get_init_noise_sigma();
 
-    std::vector<float> latents(1 * 4 * 64 * 64);
-    generate_latents(latents, 1, 4, 64, 64, init_noise_sigma);
+//    std::vector<float> latents(1 * 4 * 64 * 64);
+//    generate_latents(latents, 1, 4, 64, 64, init_noise_sigma);
+//    save_to_bin(latents, "/home/lite.ai.toolkit/ort_init_latent_data.bin");
+
+    std::string filename = "/home/lite.ai.toolkit/ort_init_latent_data.bin";
+    std::vector<float> latents = trt_load_from_bin2(filename);
 
     // 使用方法
 //    std::vector<float> latents = read_latent_data("/home/lite.ai.toolkit/latent_data.bin", 1 * 4 * 64 * 64);
     latents.insert(latents.end(), latents.begin(), latents.end());
 
+
+    // 得到提示词的embedding
+    // 并创建Tensor
+    std::string onnx_path = "/home/lite.ai.toolkit/examples/hub/onnx/sd/clip_model.onnx";
+    Clip clip(onnx_path);
+
+
     // 启动time step循环
     for (auto t : timesteps)
     {
-
-        // 得到提示词的embedding
-        // 并创建Tensor
-        std::string onnx_path = "/home/lite.ai.toolkit/examples/hub/onnx/sd/clip_model.onnx";
-        Clip clip(onnx_path);
-
         std::vector<std::string> input_text = {"i am not good at cpp"};
         std::vector<std::string> negative_input_text = {""};
         std::vector<std::vector<float>> output_embedding;
