@@ -36,7 +36,7 @@ static void test_trt_vae()
 {
     auto start = std::chrono::high_resolution_clock::now();
 
-    std::string engine_path = "/home/lite.ai.toolkit/examples/hub/trt/vae_model.engine";
+    std::string engine_path = "/home/lite.ai.toolkit/examples/hub/trt/vae_model_fp16.engine";
 
 
     lite::trt::sd::image_decoder::Vae *trt_vae = new lite::trt::sd::image_decoder::Vae (engine_path);
