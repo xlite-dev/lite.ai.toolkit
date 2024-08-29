@@ -45,7 +45,7 @@ TRTVae::~TRTVae() {
     cudaStreamDestroy(stream);
 }
 
-std::vector<float> trt_load_from_bin(const std::string& filename) {
+std::vector<float> trt_load_from_bin1(const std::string& filename) {
     std::ifstream infile(filename, std::ios::in | std::ios::binary);
     std::vector<float> data;
 
@@ -102,9 +102,11 @@ void trt_save_vector_as_image(const std::vector<float>& output_vector, int heigh
 
 
 void TRTVae::inference() {
+
+    auto start = std::chrono::high_resolution_clock::now();
     // 先读取之前的latent进行 测试接口这个先留着
-    std::string filename = "/home/lite.ai.toolkit/final_latent_data.bin";
-    std::vector<float> latent = trt_load_from_bin(filename);
+    std::string filename = "/home/lite.ai.toolkit/trt_final_latent_data.bin";
+    std::vector<float> latent = trt_load_from_bin1(filename);
     std::vector<float> latent_input(latent.size(),0);
 
     for (int i = 0; i < latent.size(); i++)
@@ -152,6 +154,10 @@ void TRTVae::inference() {
                              "/home/lite.ai.toolkit/trt_result.png");
 
     std::cout<<"trt vae inference done!"<<std::endl;
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+    std::cout << "没有加载engine的耗时是: " << duration << " 毫秒" << std::endl;
 
 }
 
