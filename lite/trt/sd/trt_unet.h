@@ -9,6 +9,7 @@
 #include "cuda_fp16.h"
 #include "trt_clip.h"
 #include <random>
+#include <algorithm>
 
 namespace trtsd{
     class TRTUNet{
@@ -31,6 +32,11 @@ namespace trtsd{
         const char * output_names = "latent";
 
         const char* trt_model_path = nullptr;
+
+    private:
+        std::vector<float> convertToFloat(const std::vector<half>& half_vec);
+
+        std::vector<half> convertToHalf(const std::vector<float>& float_vec);
 
     public:
         void inference();
