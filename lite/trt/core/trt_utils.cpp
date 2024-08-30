@@ -44,4 +44,21 @@ void trtcv::utils::transform::create_tensor(const cv::Mat &mat,std::vector<float
 }
 
 
+std::vector<float> trtcv::utils::transform::trt_load_from_bin(const std::string &filename) {
+    std::ifstream infile(filename, std::ios::in | std::ios::binary);
+    std::vector<float> data;
 
+    if (infile.is_open()) {
+        infile.seekg(0, std::ios::end);
+        size_t size = infile.tellg();
+        infile.seekg(0, std::ios::beg);
+
+        data.resize(size / sizeof(float));
+        infile.read(reinterpret_cast<char*>(data.data()), size);
+        infile.close();
+    } else {
+        std::cerr << "Failed to open file: " << filename << std::endl;
+    }
+
+    return data;
+}
