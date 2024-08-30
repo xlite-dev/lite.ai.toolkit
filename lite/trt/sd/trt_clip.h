@@ -31,8 +31,6 @@ namespace trtsd
         const char * output_names = "text_embeddings";
         const int end_flag_num = 49407;
 
-
-
         const char* trt_model_path = nullptr;
         const char* log_id = nullptr;
     public:

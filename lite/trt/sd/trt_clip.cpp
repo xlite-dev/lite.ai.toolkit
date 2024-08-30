@@ -57,7 +57,6 @@ TRTClip::TRTClip(const std::string &engine_path) {
 
 void TRTClip::encode_text(std::vector<std::string> input_text, std::vector<std::vector<int>> &output) {
 
-
     CLIPTokenizer tokenizer(VERSION_1_x);
     std::string str(reinterpret_cast<char*>(merges_utf8_c_str),sizeof(merges_utf8_c_str));
     tokenizer.load_from_merges(str);
