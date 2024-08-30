@@ -62,7 +62,7 @@ static void test_trt_vae()
 static void test_lite()
 {
     test_trt_vae();
-    test_default();
+//    test_default();
 }
 
 int main(__unused int argc, __unused char *argv[])

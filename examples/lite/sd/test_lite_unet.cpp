@@ -35,18 +35,22 @@ static void test_default()
 
 static void test_trt_unet()
 {
-    auto start = std::chrono::high_resolution_clock::now();
 
     std::string engine_path = "/home/lite.ai.toolkit/examples/hub/trt/unet_fp16.engine";
 
     lite::trt::sd::denoise::UNet *unet = new lite::trt::sd::denoise::UNet(engine_path);
 
-    unet->inference();
+    for (int i = 0; i < 10; i++)
+    {
+        auto start = std::chrono::high_resolution_clock::now();
+        unet->inference();
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+        std::cout << "耗时: " << duration << " 毫秒" << std::endl;
+    }
 
-    std::cout << "耗时: " << duration << " 毫秒" << std::endl;
+
 
     delete unet;
 }

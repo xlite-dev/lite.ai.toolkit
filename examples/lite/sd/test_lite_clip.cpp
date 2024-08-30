@@ -7,7 +7,7 @@
 
 static void test_default()
 {
-    std::string onnx_path = "/home/lite.ai.toolkit/examples/hub/onnx/sd/clip_text_model_vitb32.onnx";
+    std::string onnx_path = "/home/lite.ai.toolkit/examples/hub/onnx/sd/clip_model.onnx";
 
     auto scheduler = Scheduler::DDIMScheduler("/home/lite.ai.toolkit/lite/ort/sd/scheduler_config.json");
     scheduler.set_timesteps(30);
@@ -48,7 +48,7 @@ static void test_default()
 
 static void test_tensorrt()
 {
-    std::string engine_path = "../../../examples/hub/trt/dynamic_text_model_fp32.engine";
+    std::string engine_path = "/home/lite.ai.toolkit/examples/hub/trt/clip_text_model_fp16.engine";
 
     lite::trt::sd::text_encoder::Clip *clip = new lite::trt::sd::text_encoder::Clip(engine_path);
 
@@ -73,6 +73,6 @@ static void test_lite()
 
 int main(__unused int argc, __unused char *argv[])
 {
-    test_lite();
+//    test_lite();
     return 0;
 }
