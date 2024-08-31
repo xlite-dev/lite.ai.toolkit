@@ -8,6 +8,11 @@
 #include "lite/ort/core/ort_core.h"
 #include "ddimscheduler.h"
 #include "clip.h"
+#include <random>
+#include <cstdint>
+#include <iomanip>
+#include "tokenizer.h"
+
 
 namespace ortsd
 {
@@ -24,8 +29,6 @@ namespace ortsd
         Ort::AllocatorWithDefaultOptions allocator;
         Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
 
-//        Ort::MemoryInfo memory_info_handler = Ort::MemoryInfo::CreateCpu(
-//                OrtArenaAllocator, OrtMemTypeDefault);
 
         unsigned int num_inputs = 3;
         const LITEORT_CHAR *onnx_path = nullptr;
@@ -44,11 +47,12 @@ namespace ortsd
                 "latent"
         };
 
-    private:
-        void inference_full_test(std::vector<std::string> input,std::vector<std::vector<float>> &output);
-
     public:
+
         void inference(std::vector<std::string> input,std::vector<std::vector<float>> &output);
+
+        void inference(std::vector<std::vector<float>> clip_output,std::vector<float> &latent);
+
 
     };
 }
