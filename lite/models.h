@@ -116,6 +116,7 @@
 #include "lite/ort/sd/clip.h"
 #include "lite/ort/sd/unet.h"
 #include "lite/ort/sd/vae.h"
+#include "lite/ort/sd/pipeline.h"
 #endif
 
 
@@ -133,6 +134,7 @@
 #include "lite/trt/sd/trt_clip.h"
 #include "lite/trt/sd/trt_vae.h"
 #include "lite/trt/sd/trt_unet.h"
+#include "lite/trt/sd/trt_pipeline.h"
 #endif
 
 // ENABLE_MNN
@@ -676,6 +678,7 @@ namespace lite
         typedef ortsd::Clip _ONNXClip;
         typedef ortsd::UNet _ONNXUNet;
         typedef ortsd::Vae _ONNXVae;
+        typedef ortsd::Pipeline _ONNXPipeline;
         namespace text_encoder
         {
             typedef _ONNXClip Clip;
@@ -687,6 +690,10 @@ namespace lite
         namespace image_decoder
         {
             typedef _ONNXVae Vae;
+        }
+        namespace pipeline
+        {
+            typedef _ONNXPipeline Pipeline;
         }
     }
 
@@ -733,6 +740,7 @@ namespace lite{
             typedef trtsd::TRTUNet _TRT_UNet;
             typedef trtsd::TRTClip _TRT_Clip;
             typedef trtsd::TRTVae _TRT_Vae;
+            typedef trtsd::TRTPipeline _TRT_Pipeline;
             namespace text_encoder
             {
                 typedef _TRT_Clip Clip;
@@ -744,6 +752,10 @@ namespace lite{
             namespace denoise
             {
                 typedef _TRT_UNet UNet;
+            }
+            namespace pipeline
+            {
+                typedef _TRT_Pipeline PipeLine;
             }
         }
     }
