@@ -7,9 +7,9 @@
 
 static void test_default()
 {
-    std::string onnx_path = "/home/lite.ai.toolkit/examples/hub/onnx/sd/clip_model.onnx";
+    std::string onnx_path = "/home/wangzijian/lite.ai.toolkit/examples/hub/onnx/sd/clip_model.onnx";
 
-    auto scheduler = Scheduler::DDIMScheduler("/home/lite.ai.toolkit/lite/ort/sd/scheduler_config.json");
+    auto scheduler = Scheduler::DDIMScheduler("/home/wangzijian/lite.ai.toolkit/lite/ort/sd/scheduler_config.json");
     scheduler.set_timesteps(30);
     std::vector<int> timesteps;
     scheduler.get_timesteps(timesteps);
@@ -48,7 +48,7 @@ static void test_default()
 
 static void test_tensorrt()
 {
-    std::string engine_path = "/home/lite.ai.toolkit/examples/hub/trt/clip_text_model_fp16.engine";
+    std::string engine_path = "/home/wangzijian/lite.ai.toolkit/examples/hub/trt/clip_text_model_fp16.engine";
 
     lite::trt::sd::text_encoder::Clip *clip = new lite::trt::sd::text_encoder::Clip(engine_path);
 

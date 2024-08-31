@@ -9,7 +9,7 @@ static void test_default()
 {
     auto start = std::chrono::high_resolution_clock::now();
 
-    std::string engine_path = "/home/lite.ai.toolkit/examples/hub/onnx/sd/unet_model.onnx";
+    std::string engine_path = "/home/wangzijian/lite.ai.toolkit/examples/hub/onnx/sd/unet_model.onnx";
 
     lite::onnxruntime::sd::denoise::UNet *unet = new lite::onnxruntime::sd::denoise::UNet(engine_path);
 
@@ -36,7 +36,7 @@ static void test_default()
 static void test_trt_unet()
 {
 
-    std::string engine_path = "/home/lite.ai.toolkit/examples/hub/trt/unet_fp16.engine";
+    std::string engine_path = "/home/wangzijian/lite.ai.toolkit/examples/hub/trt/unet_fp16.engine";
 
     lite::trt::sd::denoise::UNet *unet = new lite::trt::sd::denoise::UNet(engine_path);
 
@@ -58,8 +58,8 @@ static void test_trt_unet()
 
 static void test_lite()
 {
-    test_trt_unet();
-//    test_default();
+//    test_trt_unet();
+    test_default();
 }
 
 int main(__unused int argc, __unused char *argv[])
