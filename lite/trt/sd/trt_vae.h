@@ -38,6 +38,10 @@ namespace trtsd{
     public:
         void inference();
 
+        void inference(const std::vector<float> &unet_input,const std::string save_path);
+
+
+
     };
 }
 
