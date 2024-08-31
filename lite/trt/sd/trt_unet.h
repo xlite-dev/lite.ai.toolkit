@@ -48,6 +48,11 @@ namespace trtsd{
     public:
         void inference();
 
+        void inference(const std::vector<std::vector<float>> &clip_output,std::vector<float> &latent);
+
+
+
+
     };
 }
 
