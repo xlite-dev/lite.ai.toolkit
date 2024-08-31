@@ -1,5 +1,5 @@
 //
-// Created by root on 8/27/24.
+// Created by wangzijian on 8/27/24.
 //
 
 #include "vae.h"
@@ -78,7 +78,7 @@ void save_vector_as_image(const std::vector<float>& output_vector, int height, i
 
 void Vae::inference(std::vector<std::string> input, std::vector<std::vector<float>> &output) {
 
-    std::string filename = "/home/lite.ai.toolkit/final_latent_data.bin";
+    std::string filename = "/home/wangzijian/lite.ai.toolkit/final_latent_data.bin";
     // 从 bin 文件读取
     std::vector<float> latent = load_from_bin(filename);
     std::vector<float> latent_input(latent.size(),0);
@@ -134,11 +134,65 @@ void Vae::inference(std::vector<std::string> input, std::vector<std::vector<floa
 
 
 
-    save_vector_as_image(output1, 512, 512, "/home/lite.ai.toolkit/output_final.png");
-
-
-
+    save_vector_as_image(output1, 512, 512, "/home/wangzijian/lite.ai.toolkit/output_final.png");
 
 }
 
+
+void Vae::inference(const std::vector<float> &unet_input, const std::string save_path) {
+
+    std::vector<float> latent_input(unet_input.size(),0);
+
+    for (int i = 0; i < unet_input.size(); i++)
+    {
+        latent_input[i] = 1.0f / 0.18215 * unet_input[i];
+    }
+
+    // 这个是fp32的推理
+
+    std::vector<int64_t> input_node_dims = {1, 4, 64, 64};
+
+
+    Ort::Value inputTensor = Ort::Value::CreateTensor<float>(
+            memory_info,
+            latent_input.data(),
+            latent_input.size(),
+            input_node_dims.data(),
+            input_node_dims.size()
+    );
+
+    Ort::RunOptions runOptions;
+
+    // run inference
+    std::vector<Ort::Value> ort_outputs = ort_session->Run(
+            runOptions,
+            input_node_names.data(),
+            &inputTensor,
+            1,
+            output_node_names.data(),
+            output_node_names.size()
+    );
+
+    const Ort::Float16_t* vae_preds = ort_outputs[0].GetTensorData<Ort::Float16_t>();
+
+
+    auto shape_info = ort_outputs[0].GetTensorTypeAndShapeInfo();
+    auto dims = shape_info.GetShape();
+
+    int batch = dims[0];
+    int channels = dims[1];
+    int height = dims[2];
+    int width = dims[3];
+
+    std::vector<float>  output1;
+    output1.resize(1 * channels * height * width);
+
+    for (size_t i = 0; i < output1.size(); ++i)
+    {
+        output1[i] = static_cast<float>(vae_preds[i]);
+    }
+
+    save_vector_as_image(output1, 512, 512, save_path);
+
+}
 
