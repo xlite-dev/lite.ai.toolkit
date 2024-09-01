@@ -45,8 +45,6 @@ void Clip::inference(std::vector<std::string> input, std::vector<std::vector<flo
     std::vector<std::vector<int>> output_encode;
 
     encode_text(input,output_encode);
-
-
     // flat out output_encode
     std::vector<int32_t> flat_output_encode;
     for (const auto& vec : output_encode) {
