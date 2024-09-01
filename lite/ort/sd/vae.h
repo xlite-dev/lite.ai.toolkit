@@ -39,7 +39,6 @@ namespace ortsd
         };
 
     public:
-        void inference(std::vector<std::string> input,std::vector<std::vector<float>> &output);
 
         void inference(const std::vector<float> &unet_input,const std::string save_path);
 

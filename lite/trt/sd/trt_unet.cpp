@@ -48,7 +48,7 @@ TRTUNet::~TRTUNet() {
 std::vector<float> TRTUNet::convertToFloat(const std::vector<half> &half_vec) {
     std::vector<float> float_vec(half_vec.size());
     std::transform(half_vec.begin(), half_vec.end(), float_vec.begin(),
-                   [](half h) { return __half2float(h); }); // 使用 __half2float 将 half 转换为 float
+                   [](half h) { return __half2float(h); });
     return float_vec;
 }
 
@@ -103,17 +103,14 @@ void TRTUNet::inference() {
     std::copy(negative_output_embedding[0].begin(), negative_output_embedding[0].end(), combined_embedding.begin() + output_embedding[0].size());
 
 
-    // 将embedding改为fp16的输入
     std::vector<half> combined_embedding_fp16(combined_embedding.size());
     std::transform(combined_embedding.begin(), combined_embedding.end(), combined_embedding_fp16.begin(),[](float f) { return __float2half(f);});
 
 
-    // 将初始的latent改为fp16的输入
     std::vector<half> latents_fp16(latents.size(),0);
     std::transform(latents.begin(), latents.end(), latents_fp16.begin(),[](float f) { return __float2half(f);});
 
-    // 现在的buffer是有三个输入的 输出是一个在外面分配两个 然后在里面分配一个
-    // 先分配三个输入的buffer
+
     cudaMalloc(&buffers[2], combined_embedding_fp16.size() * sizeof(half));
     trt_context->setTensorAddress(input_names[2],buffers[2]);
     cudaMemcpyAsync(buffers[2], combined_embedding_fp16.data(), combined_embedding_fp16.size() * sizeof(half ),
@@ -137,7 +134,6 @@ void TRTUNet::inference() {
     sampleDims.d[3] = input_node_dims_sample[3];
     trt_context->setInputShape("sample", sampleDims);
 
-    // 设置输出的buffer
     cudaMalloc(&buffers[3], unet_outputsize * sizeof(half));
     trt_context->setTensorAddress(output_names,buffers[3]);
     std::vector<half> output_trt(unet_outputsize);
@@ -147,14 +143,13 @@ void TRTUNet::inference() {
 
     for (auto t : timesteps)
     {
-        // 将时间步改为fp16的输入
         float t_f = t;
         std::vector<half> t_fp16(1,__float2half(t_f));
         cudaMalloc(&buffers[1], t_fp16.size() * sizeof(half));
         trt_context->setTensorAddress(input_names[1],buffers[1]);
         cudaMemcpyAsync(buffers[1], t_fp16.data(), t_fp16.size() * sizeof(half ),
                         cudaMemcpyHostToDevice, stream);
-        // 为time_step设置维度（假设是标量）
+
         nvinfer1::Dims timeStepDims;
         timeStepDims.nbDims = 1;
         timeStepDims.d[0] = 1;
@@ -168,8 +163,6 @@ void TRTUNet::inference() {
             return;
         }
 
-        // 将推理处理的结果更新为下一次输入的sample
-        // 先将其取出来 注意是fp16的
         cudaMemcpyAsync(output_trt.data(), buffers[3], unet_outputsize * sizeof(half),
                         cudaMemcpyDeviceToHost, stream);
 
@@ -179,7 +172,6 @@ void TRTUNet::inference() {
         std::copy(output_trt.begin(), output_trt.begin() +noise_pred_outputsize, noise_pred_text.begin());
         std::copy(output_trt.begin() + noise_pred_outputsize, output_trt.end(), noise_pred_uncond.begin());
 
-        // 将 half 类型数据转换为 float 类型数据
         std::vector<float> noise_pred_uncond_float = convertToFloat(noise_pred_uncond);
         std::vector<float> noise_pred_text_float = convertToFloat(noise_pred_text);
 
@@ -211,21 +203,17 @@ void TRTUNet::inference() {
 
         trtcv::utils::transform::trt_save_to_bin(pred_sample,"/home/wangzijian/lite.ai.toolkit/trt_final_latent_data.bin");
 
-        // 将其拷到latents中
         latents_fp16.clear();
         latents_fp16.assign(pred_sample_fp16.begin(),pred_sample_fp16.end());
         latents_fp16.insert(latents_fp16.end(), latents_fp16.begin(), latents_fp16.end());
 
-        // 需要更新buffer里面的值
         cudaMemcpyAsync(buffers[0], latents_fp16.data(), latents_fp16.size() * sizeof(half ),
                         cudaMemcpyHostToDevice, stream);
     }
 
-    // 现将half2float
     std::vector<float> output_trt_float(final_latent_outputsize);
 
     output_trt_float.assign(final_latent_output.begin(),final_latent_output.end());
-    // 将最后一次的结果保存下来 放到vae里面去推理
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
@@ -238,7 +226,7 @@ void TRTUNet::inference() {
 void TRTUNet::inference(const std::vector<std::vector<float>> &clip_output, std::vector<float> &unet_output) {
 
     auto start = std::chrono::high_resolution_clock::now();
-    // 初始化time step
+
     auto scheduler = Scheduler::DDIMScheduler("/home/wangzijian/lite.ai.toolkit/lite/ort/sd/scheduler_config.json");
     scheduler.set_timesteps(30);
     std::vector<int> timesteps;
@@ -258,18 +246,14 @@ void TRTUNet::inference(const std::vector<std::vector<float>> &clip_output, std:
     std::copy(output_embedding.begin(), output_embedding.end(), combined_embedding.begin());
     std::copy(negative_output_embedding.begin(), negative_output_embedding.end(), combined_embedding.begin() + output_embedding.size());
 
-
-    // 将embedding改为fp16的输入
     std::vector<half> combined_embedding_fp16(combined_embedding.size());
     std::transform(combined_embedding.begin(), combined_embedding.end(), combined_embedding_fp16.begin(),[](float f) { return __float2half(f);});
 
 
-    // 将初始的latent改为fp16的输入
     std::vector<half> latents_fp16(latents.size(),0);
     std::transform(latents.begin(), latents.end(), latents_fp16.begin(),[](float f) { return __float2half(f);});
 
-    // 现在的buffer是有三个输入的 输出是一个在外面分配两个 然后在里面分配一个
-    // 先分配三个输入的buffer
+
     cudaMalloc(&buffers[2], combined_embedding_fp16.size() * sizeof(half));
     trt_context->setTensorAddress(input_names[2],buffers[2]);
     cudaMemcpyAsync(buffers[2], combined_embedding_fp16.data(), combined_embedding_fp16.size() * sizeof(half ),
@@ -293,7 +277,6 @@ void TRTUNet::inference(const std::vector<std::vector<float>> &clip_output, std:
     sampleDims.d[3] = input_node_dims_sample[3];
     trt_context->setInputShape("sample", sampleDims);
 
-    // 设置输出的buffer
     cudaMalloc(&buffers[3], unet_outputsize * sizeof(half));
     trt_context->setTensorAddress(output_names,buffers[3]);
     std::vector<half> output_trt(unet_outputsize);
@@ -303,14 +286,13 @@ void TRTUNet::inference(const std::vector<std::vector<float>> &clip_output, std:
 
     for (auto t : timesteps)
     {
-        // 将时间步改为fp16的输入
         float t_f = t;
         std::vector<half> t_fp16(1,__float2half(t_f));
         cudaMalloc(&buffers[1], t_fp16.size() * sizeof(half));
         trt_context->setTensorAddress(input_names[1],buffers[1]);
         cudaMemcpyAsync(buffers[1], t_fp16.data(), t_fp16.size() * sizeof(half ),
                         cudaMemcpyHostToDevice, stream);
-        // 为time_step设置维度（假设是标量）
+
         nvinfer1::Dims timeStepDims;
         timeStepDims.nbDims = 1;
         timeStepDims.d[0] = 1;
@@ -324,8 +306,6 @@ void TRTUNet::inference(const std::vector<std::vector<float>> &clip_output, std:
             return;
         }
 
-        // 将推理处理的结果更新为下一次输入的sample
-        // 先将其取出来 注意是fp16的
         cudaMemcpyAsync(output_trt.data(), buffers[3], unet_outputsize * sizeof(half),
                         cudaMemcpyDeviceToHost, stream);
 
@@ -335,7 +315,7 @@ void TRTUNet::inference(const std::vector<std::vector<float>> &clip_output, std:
         std::copy(output_trt.begin(), output_trt.begin() +noise_pred_outputsize, noise_pred_text.begin());
         std::copy(output_trt.begin() + noise_pred_outputsize, output_trt.end(), noise_pred_uncond.begin());
 
-        // 将 half 类型数据转换为 float 类型数据
+
         std::vector<float> noise_pred_uncond_float = convertToFloat(noise_pred_uncond);
         std::vector<float> noise_pred_text_float = convertToFloat(noise_pred_text);
 
@@ -359,27 +339,25 @@ void TRTUNet::inference(const std::vector<std::vector<float>> &clip_output, std:
         scheduler.step(noise_pred,noise_pred_dims, latents_fp32, noise_pred_dims,
                        pred_sample, t);
 
-
-
         std::vector<half> pred_sample_fp16(pred_sample.size(),0);
         std::transform(pred_sample.begin(), pred_sample.end(),
                        pred_sample_fp16.begin(),[](float f) { return __float2half(f);});
 
         unet_output.assign(pred_sample.begin(),pred_sample.end());
-        // 将其拷到latents中
+
         latents_fp16.clear();
         latents_fp16.assign(pred_sample_fp16.begin(),pred_sample_fp16.end());
         latents_fp16.insert(latents_fp16.end(), latents_fp16.begin(), latents_fp16.end());
 
-        // 需要更新buffer里面的值
+        // update buffers value
         cudaMemcpyAsync(buffers[0], latents_fp16.data(), latents_fp16.size() * sizeof(half ),
                         cudaMemcpyHostToDevice, stream);
     }
 
-    // 现将half2float
+
     std::vector<float> output_trt_float(final_latent_outputsize);
     output_trt_float.assign(final_latent_output.begin(),final_latent_output.end());
-    // 将最后一次的结果保存下来 放到vae里面去推理
+
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 

@@ -49,8 +49,6 @@ namespace ortsd
 
     public:
 
-        void inference(std::vector<std::string> input,std::vector<std::vector<float>> &output);
-
         void inference(std::vector<std::vector<float>> clip_output,std::vector<float> &latent);
 
 

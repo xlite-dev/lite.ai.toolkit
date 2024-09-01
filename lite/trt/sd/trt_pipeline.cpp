@@ -7,12 +7,11 @@ using trtsd::TRTPipeline;
 
 TRTPipeline::TRTPipeline(const std::string &_clip_engine_path, const std::string &_unet_engine_path,
                          const std::string &_vae_engine_path) {
-    // 在这里初始化三个类
-    // 三个智能指针
-    // 电脑现存不足不能一起初始化
-//    clip = std::make_unique<TRTClip>(_clip_engine_path);
-//    unet = std::make_unique<TRTUNet>(_unet_engine_path);
-//    vae = std::make_unique<TRTVae>(_vae_engine_path);
+
+        //    clip = std::make_unique<TRTClip>(_clip_engine_path);
+        //    unet = std::make_unique<TRTUNet>(_unet_engine_path);
+        //    vae = std::make_unique<TRTVae>(_vae_engine_path);
+
 }
 
 void TRTPipeline::inference(std::string prompt, std::string negative_prompt, std::string image_save_path) {

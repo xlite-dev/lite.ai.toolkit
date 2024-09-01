@@ -65,13 +65,12 @@ std::vector<float> trt_load_from_bin1(const std::string& filename) {
 }
 
 void TRTVae::trt_save_vector_as_image(const std::vector<float>& output_vector, int height, int width, const std::string& filename) {
-    // 确保 output_vector 的大小与图像大小匹配
+
     if (output_vector.size() != height * width * 3) {
         std::cerr << "Vector size does not match image dimensions!" << std::endl;
         return;
     }
 
-    // 重新组织数据，将channels, height, width格式转换为height, width, channels格式
     std::vector<float> reorganized_output(height * width * 3);
 
     for (int c = 0; c < 3; ++c) {
@@ -82,13 +81,11 @@ void TRTVae::trt_save_vector_as_image(const std::vector<float>& output_vector, i
         }
     }
 
-    // 将重新组织后的数据复制到 cv::Mat
+
     cv::Mat image(height, width, CV_32FC3, reorganized_output.data());
 
-    // 按照 Python 代码中的逻辑处理数据
     image = (image + 1.0f) * 255.0f / 2.0f;
 
-    // 将值限定在 0-255 的范围内，并转换为 8 位无符号整数类型
     image = cv::min(cv::max(image, 0.0f), 255.0f);
 
     cv::Mat image_8bit;
@@ -96,7 +93,6 @@ void TRTVae::trt_save_vector_as_image(const std::vector<float>& output_vector, i
 
     cv::cvtColor(image_8bit, image_8bit, cv::COLOR_RGB2BGR);
 
-    // 保存图像
     cv::imwrite(filename, image_8bit);
 }
 
@@ -104,18 +100,16 @@ void TRTVae::trt_save_vector_as_image(const std::vector<float>& output_vector, i
 void TRTVae::inference() {
 
     auto start = std::chrono::high_resolution_clock::now();
-    // 先读取之前的latent进行 测试接口这个先留着
+
     std::string filename = "/home/wangzijian/lite.ai.toolkit/trt_final_latent_data.bin";
     std::vector<float> latent = trtcv::utils::transform::trt_load_from_bin(filename);
     std::vector<float> latent_input(latent.size(),0);
 
     std::transform(latent.begin(),latent.end(),latent_input.begin(),[](float x){return (1.0f / 0.18215 * x);});
 
-    // 分配cuda内存
     cudaMalloc(&buffers[0], latent_input.size() * sizeof(float));
     trt_context->setTensorAddress(input_names,buffers[0]);
 
-    // output buffer
     cudaMalloc(&buffers[1],output_size * sizeof (half));
     trt_context->setTensorAddress(output_names,buffers[1]);
 
@@ -124,7 +118,6 @@ void TRTVae::inference() {
     nvinfer1::Dims inputDims;
     inputDims.nbDims = static_cast<int32_t>(input_node_dims.size()); // 确保 nbDims 正确设置
 
-    // set trt input dims
     std::transform(input_node_dims.begin(),input_node_dims.end(),inputDims.d,[](int64_t dim){return static_cast<int32_t>(dim);});
     trt_context->setInputShape("latent", inputDims);
     bool status = trt_context->enqueueV3(stream);
@@ -138,9 +131,8 @@ void TRTVae::inference() {
     cudaMemcpyAsync(output_trt_half.data(), buffers[1], output_size * sizeof(half),
                     cudaMemcpyDeviceToHost, stream);
 
-    // float output vector
     std::vector<float> output_trt_float(output_size, 0);
-    // half to float
+
     std::transform(output_trt_half.begin(),output_trt_half.end(),
                    output_trt_float.begin(),[](half h){return __half2float(h);});
 
@@ -157,16 +149,12 @@ void TRTVae::inference() {
 
 void TRTVae::inference(const std::vector<float> &unet_input, const std::string save_path) {
 
-    auto start = std::chrono::high_resolution_clock::now();
-
     std::vector<float> latent_input(unet_input.size(),0);
     std::transform(unet_input.begin(),unet_input.end(),latent_input.begin(),[](float x){return (1.0f / 0.18215 * x);});
 
-    // 分配cuda内存
     cudaMalloc(&buffers[0], latent_input.size() * sizeof(float));
     trt_context->setTensorAddress(input_names,buffers[0]);
 
-    // output buffer
     cudaMalloc(&buffers[1],output_size * sizeof (half));
     trt_context->setTensorAddress(output_names,buffers[1]);
 
@@ -175,7 +163,6 @@ void TRTVae::inference(const std::vector<float> &unet_input, const std::string s
     nvinfer1::Dims inputDims;
     inputDims.nbDims = static_cast<int32_t>(input_node_dims.size()); // 确保 nbDims 正确设置
 
-    // set trt input dims
     std::transform(input_node_dims.begin(),input_node_dims.end(),inputDims.d,[](int64_t dim){return static_cast<int32_t>(dim);});
     trt_context->setInputShape("latent", inputDims);
     bool status = trt_context->enqueueV3(stream);
@@ -189,9 +176,8 @@ void TRTVae::inference(const std::vector<float> &unet_input, const std::string s
     cudaMemcpyAsync(output_trt_half.data(), buffers[1], output_size * sizeof(half),
                     cudaMemcpyDeviceToHost, stream);
 
-    // float output vector
     std::vector<float> output_trt_float(output_size, 0);
-    // half to float
+
     std::transform(output_trt_half.begin(),output_trt_half.end(),
                    output_trt_float.begin(),[](half h){return __half2float(h);});
 
@@ -199,9 +185,7 @@ void TRTVae::inference(const std::vector<float> &unet_input, const std::string s
                                      save_path);
 
     std::cout<<"trt vae inference done!"<<std::endl;
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
-    std::cout << "没有加载engine的耗时是: " << duration << " 毫秒" << std::endl;
+
 
 }
