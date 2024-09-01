@@ -25,6 +25,9 @@ static void test_default()
 
 static void test_trt_pipeline()
 {
+    // 记录时间
+    std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
+
     std::string clip_engine_path = "/home/wangzijian/lite.ai.toolkit/examples/hub/trt/clip_model_fp16.engine";
     std::string unet_engine_path = "/home/wangzijian/lite.ai.toolkit/examples/hub/trt/unet_model_fp16.engine";
     std::string vae_engine_path = "/home/wangzijian/lite.ai.toolkit/examples/hub/trt/vae_model_fp16.engine";
@@ -39,6 +42,11 @@ static void test_trt_pipeline()
     std::string negative_prompt = "";
     std::string save_path = "/home/wangzijian/lite.ai.toolkit/output_merge_tensorrt.png";
     pipeline->inference(prompt,negative_prompt,save_path);
+
+    // 记录结束时间并且输出
+    std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end_time - start_time;
+    std::cout << "Elapsed time: " << elapsed_seconds.count() << " seconds" << std::endl;
 
     delete pipeline;
 
