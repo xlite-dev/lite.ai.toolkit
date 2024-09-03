@@ -15,8 +15,10 @@ static void test_default()
 
     std::string prompt = "1girl with red hair,blue eyes,smile, looking at viewer";
     std::string negative_prompt = "";
-    std::string save_path = "/home/wangzijian/lite.ai.toolkit/output_merge.png";
-    pipeline->inference(prompt,negative_prompt,save_path);
+    std::string save_path = "../../../examples/logs/output_merge.png";
+    std::string scheduler_config_path = "../../../lite/ort/sd/scheduler_config.json";
+
+    pipeline->inference(prompt,negative_prompt,save_path,scheduler_config_path);
 
     delete pipeline;
 
@@ -28,8 +30,8 @@ static void test_trt_pipeline()
     // 记录时间
     std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
 
-    std::string clip_engine_path = "../../../examples/hub/trt/clip_model_fp16.engine";
-    std::string unet_engine_path = "../../../examples/hub/trt/unet_model_fp16.engine";
+    std::string clip_engine_path = "../../../examples/hub/trt/clip_text_model_fp16.engine";
+    std::string unet_engine_path = "../../../examples/hub/trt/unet_fp16.engine";
     std::string vae_engine_path = "../../../examples/hub/trt/vae_model_fp16.engine";
 
 
@@ -41,7 +43,8 @@ static void test_trt_pipeline()
     std::string prompt = "1girl with red hair,blue eyes,smile, looking at viewer";
     std::string negative_prompt = "";
     std::string save_path = "../../../examples/logs/output_merge_tensorrt.png";
-    pipeline->inference(prompt,negative_prompt,save_path);
+    std::string scheduler_config_path = "../../../lite/ort/sd/scheduler_config.json";
+    pipeline->inference(prompt,negative_prompt,save_path,scheduler_config_path);
 
     // 记录结束时间并且输出
     std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
@@ -54,11 +57,13 @@ static void test_trt_pipeline()
 
 static void test_lite()
 {
-//    test_default();
     test_trt_pipeline();
+
+//    test_default();
 }
 
 int main()
 {
     test_lite();
+    return 0;
 }
