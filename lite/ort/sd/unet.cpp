@@ -108,9 +108,9 @@ std::vector<float> trt_load_from_bin2(const std::string& filename) {
 
 
 
-void UNet::inference(std::vector<std::vector<float>> clip_output, std::vector<float> &latent_final_output) {
+void UNet::inference(std::vector<std::vector<float>> clip_output, std::vector<float> &latent_final_output,std::string scheduler_config_path) {
 
-    auto scheduler = Scheduler::DDIMScheduler("/home/wangzijian/lite.ai.toolkit/lite/ort/sd/scheduler_config.json");
+    auto scheduler = Scheduler::DDIMScheduler(scheduler_config_path);
     scheduler.set_timesteps(30);
     std::vector<int> timesteps;
     scheduler.get_timesteps(timesteps);
@@ -121,8 +121,6 @@ void UNet::inference(std::vector<std::vector<float>> clip_output, std::vector<fl
 
     for (auto t : timesteps)
     {
-        std::vector<std::string> input_text = {"i am not good at cpp"};
-        std::vector<std::string> negative_input_text = {""};
         std::vector<float> output_embedding = clip_output[0];
         std::vector<float> negative_output_embedding = clip_output[1];
 

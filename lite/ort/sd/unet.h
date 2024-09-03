@@ -49,7 +49,7 @@ namespace ortsd
 
     public:
 
-        void inference(std::vector<std::vector<float>> clip_output,std::vector<float> &latent);
+        void inference(std::vector<std::vector<float>> clip_output,std::vector<float> &latent,std::string scheduler_config_path);
 
 
     };
