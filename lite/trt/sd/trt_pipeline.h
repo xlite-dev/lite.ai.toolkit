@@ -9,23 +9,26 @@
 #include "lite/trt/sd/trt_clip.h"
 #include "lite/trt/sd/trt_unet.h"
 
-
-namespace trtsd{
+namespace trtsd {
 
     class TRTPipeline {
     public:
         TRTPipeline(const std::string &_clip_engine_path,
-                 const std::string &_unet_engine_path,
-                 const std::string &_vae_engine_path);
+                    const std::string &_unet_engine_path,
+                    const std::string &_vae_engine_path);
         ~TRTPipeline() = default;
 
     private:
-        std::unique_ptr<TRTUNet> unet;
-        std::unique_ptr<TRTClip> clip;
-        std::unique_ptr<TRTVae> vae;
+        std::string clip_engine_path;
+        std::string unet_engine_path;
+        std::string vae_engine_path;
+
+        std::unique_ptr<TRTUNet> unet = nullptr;
+        std::unique_ptr<TRTClip> clip = nullptr;
+        std::unique_ptr<TRTVae> vae = nullptr;
 
     public:
-        void inference(std::string prompt,std::string negative_prompt,std::string image_save_path);
+        void inference(std::string prompt, std::string negative_prompt, std::string image_save_path, std::string scheduler_config_path);
     };
 
 }
