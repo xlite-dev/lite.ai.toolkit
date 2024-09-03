@@ -22,7 +22,7 @@ void Pipeline::inference(std::vector<std::string> prompt, std::string image_save
 
 }
 
-void Pipeline::inference(std::string prompt, std::string negative_prompt, std::string image_save_path) {
+void Pipeline::inference(std::string prompt, std::string negative_prompt, std::string image_save_path, std::string scheduler_config_path) {
 //    clip->inference()
 
         std::vector<std::string> total_prompt = {std::move(prompt), std::move(negative_prompt)};
@@ -36,7 +36,7 @@ void Pipeline::inference(std::string prompt, std::string negative_prompt, std::s
         // 得到clip的输出
         // unet inference
         std::vector<float> unet_output;
-        unet->inference(clip_output,unet_output);
+        unet->inference(clip_output,unet_output,scheduler_config_path);
         unet.reset();
 
         // 得到unet的输出
