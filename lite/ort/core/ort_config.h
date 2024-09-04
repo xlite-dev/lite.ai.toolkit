@@ -17,7 +17,7 @@ inline static std::string OrtCompatiableGetInputName(size_t index, OrtAllocator*
 #if ORT_API_VERSION >= 14
     return std::string(ort_session->GetInputNameAllocated(index, allocator).get());
 #else  
-    return std::string(ort_session->GetInputName(i, allocator));
+    return std::string(ort_session->GetInputName(index, allocator));
 #endif
 }
 
@@ -26,7 +26,7 @@ inline static std::string OrtCompatiableGetOutputName(size_t index, OrtAllocator
 #if ORT_API_VERSION >= 14
     return std::string(ort_session->GetOutputNameAllocated(index, allocator).get());
 #else  
-    return std::string(ort_session->GetOutputName(i, allocator));
+    return std::string(ort_session->GetOutputName(index, allocator));
 #endif
 }
 
