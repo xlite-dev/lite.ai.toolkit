@@ -4,9 +4,6 @@
 
 #ifndef LITE_AI_TOOLKIT_VAE_H
 #define LITE_AI_TOOLKIT_VAE_H
-#include "onnxruntime_cxx_api.h"
-#include "opencv4/opencv2/opencv.hpp"
-#include "iostream"
 #include "lite/ort/core/ort_core.h"
 
 namespace ortsd
