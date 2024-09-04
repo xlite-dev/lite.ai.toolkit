@@ -46,12 +46,15 @@ function(add_lite_ai_toolkit_shared_library version soversion)
         include(cmake/onnxruntime.cmake)
         set(LITE_SRCS ${LITE_SRCS} ${ORT_SRCS})
         set(LITE_DEPENDENCIES ${LITE_DEPENDENCIES} onnxruntime ddim_scheduler_cpp)
+        link_directories(${CMAKE_SOURCE_DIR}/lite/bin)
     endif ()
 
     if (ENABLE_TENSORRT)
         include(cmake/tensorrt.cmake)
         set(LITE_SRCS ${LITE_SRCS} ${TRT_SRCS})
-        set(LITE_DEPENDENCIES ${LITE_DEPENDENCIES}  cudart nvinfer nvonnxparser nvinfer_plugin ddim_scheduler_cpp)
+        set(LITE_DEPENDENCIES ${LITE_DEPENDENCIES} cudart nvinfer nvonnxparser 
+                                                   nvinfer_plugin ddim_scheduler_cpp)
+        link_directories(${CMAKE_SOURCE_DIR}/lite/bin)
     endif ()
 
     if (ENABLE_MNN)
