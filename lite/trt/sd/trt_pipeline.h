@@ -15,7 +15,8 @@ namespace trtsd {
     public:
         TRTPipeline(const std::string &_clip_engine_path,
                     const std::string &_unet_engine_path,
-                    const std::string &_vae_engine_path);
+                    const std::string &_vae_engine_path,
+                    bool is_low_vram = true);
         ~TRTPipeline() = default;
 
     private:
@@ -28,7 +29,7 @@ namespace trtsd {
         std::unique_ptr<TRTVae> vae = nullptr;
 
     public:
-        void inference(std::string prompt, std::string negative_prompt, std::string image_save_path, std::string scheduler_config_path);
+        void inference(std::string prompt, std::string negative_prompt, std::string image_save_path, std::string scheduler_config_path,bool is_low_vram = true);
     };
 
 }
