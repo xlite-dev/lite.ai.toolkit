@@ -77,7 +77,6 @@ std::vector<float> trt_load_from_bin(const std::string& filename) {
 
 void TRTUNet::inference(const std::vector<std::vector<float>> &clip_output, std::vector<float> &unet_output,std::string scheduler_config_path) {
 
-    auto start = std::chrono::high_resolution_clock::now();
 
     auto scheduler = Scheduler::DDIMScheduler(scheduler_config_path);
     scheduler.set_timesteps(30);
@@ -208,10 +207,6 @@ void TRTUNet::inference(const std::vector<std::vector<float>> &clip_output, std:
     std::vector<float> output_trt_float(final_latent_outputsize);
     output_trt_float.assign(final_latent_output.begin(),final_latent_output.end());
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-
-    std::cout << "没有加载engine的耗时是: " << duration << " 毫秒" << std::endl;
 
 
 }

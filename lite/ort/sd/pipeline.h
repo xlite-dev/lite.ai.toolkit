@@ -29,7 +29,6 @@ namespace ortsd{
 
 
     public:
-        void inference(std::vector<std::string> prompt,std::string image_save_path);
 
         void inference(std::string prompt,std::string negative_prompt,std::string image_save_path,std::string scheduler_config_path);
 

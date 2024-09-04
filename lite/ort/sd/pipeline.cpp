@@ -14,13 +14,6 @@ Pipeline::Pipeline(const std::string &_clip_onnx_path, const std::string &_unet_
     vae = std::make_unique<Vae>(_vae_onnx_path, _num_threads);
 }
 
-void Pipeline::inference(std::vector<std::string> prompt, std::string image_save_path) {
-
-    // 这里的prompt是一个vector [0] 代表
-
-
-
-}
 
 void Pipeline::inference(std::string prompt, std::string negative_prompt, std::string image_save_path, std::string scheduler_config_path) {
 //    clip->inference()
