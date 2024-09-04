@@ -5,6 +5,7 @@
 
 static void test_default()
 {
+#ifdef ENABLE_ONNXRUNTIME
     std::string clip_onnx_path = "../../../examples/hub/onnx/sd/clip_model.onnx";
     std::string unet_onnx_path = "../../../examples/hub/onnx/sd/unet_model.onnx";
     std::string vae_onnx_path = "../../../examples/examples/hub/onnx/sd/vae_model.onnx";
@@ -21,12 +22,13 @@ static void test_default()
     pipeline->inference(prompt,negative_prompt,save_path,scheduler_config_path);
 
     delete pipeline;
-
+#endif
 }
 
 
 static void test_trt_pipeline()
 {
+#ifdef ENABLE_TENSORRT
     // 记录时间
     std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
 
@@ -52,14 +54,14 @@ static void test_trt_pipeline()
     std::cout << "Elapsed time: " << elapsed_seconds.count() << " seconds" << std::endl;
 
     delete pipeline;
+#endif
 
 }
 
 static void test_lite()
 {
+    test_default();
     test_trt_pipeline();
-
-//    test_default();
 }
 
 int main()
