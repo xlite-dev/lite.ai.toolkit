@@ -185,9 +185,6 @@ void TRTUNet::inference(const std::vector<std::vector<float>> &clip_output, std:
         scheduler.step(noise_pred,noise_pred_dims, latents_fp32, noise_pred_dims,
                        pred_sample, t);
 
-        scheduler.step(noise_pred,noise_pred_dims, latents_fp32, noise_pred_dims,
-                       pred_sample, t);
-
         std::vector<half> pred_sample_fp16(pred_sample.size(),0);
         std::transform(pred_sample.begin(), pred_sample.end(),
                        pred_sample_fp16.begin(),[](float f) { return __float2half(f);});
