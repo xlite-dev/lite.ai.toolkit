@@ -224,10 +224,10 @@ generate_bboxes num: 48
 
 ### NVIDIA GPU Inference: TensorRT
 
-|Class|Class|Class|Class|Class
-|:---:|:---:|:---:|:---:|:---:| 
-|✅[YOLOv5](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolov5.cpp)|✅[YOLOv6](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolov6.cpp)|✅[YOLOv8](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolov8.cpp)|[YOLOv8Face](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolov8face.cpp)|✅[YOLOv5Face](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolo5face.cpp)|✅[YOLOv5BlazeFace](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolov5_blazeface.cpp)|  
-|✅[YOLOX](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolox.cpp)|✅[StableDiffusion](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/sd/test_lite_sd_pipeline.cpp)| / | / | / |  / |
+|Class|Class|Class|Class|Class| Class| System | Engine |  
+|:---:|:---:|:---:|:---:|:---:| :---:|:---:|:---:|      
+|✅[YOLOv5](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolov5.cpp)|✅[YOLOv6](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolov6.cpp)|✅[YOLOv8](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolov8.cpp)|✅[YOLOv8Face](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolov8face.cpp)|✅[YOLOv5Face](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolo5face.cpp)|✅[YOLOv5BlazeFace](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolov5_blazeface.cpp)|  Linux | TensorRT |  
+|✅[YOLOX](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolox.cpp)|✅[StableDiffusion](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/sd/test_lite_sd_pipeline.cpp)| / | / | / |  / |  Linux | TensorRT |
 
 
 ### CPU Inference: ONNXRuntime, MNN, NCNN and TNN
