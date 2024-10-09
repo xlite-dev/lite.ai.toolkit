@@ -8,6 +8,7 @@
   <img src=https://img.shields.io/badge/Device-GPU/CPU-yellow.svg >
   <img src=https://img.shields.io/badge/ONNXRuntime-1.17.1-turquoise.svg >
   <img src=https://img.shields.io/badge/MNN-2.8.2-hotpink.svg >
+  <img src=https://img.shields.io/badge/TensorRT-10-turquoise.svg >
   <img src=https://img.shields.io/github/stars/DefTruth/lite.ai.toolkit.svg?style=social >
   <img src=https://img.shields.io/github/downloads/DefTruth/lite.ai.toolkit/total?color=ccf&label=downloads&logo=github&logoColor=lightgrey >
 </div>   
@@ -39,29 +40,6 @@ Most of my time now is focused on **LLM/VLM** Inference. Please check 📖[Aweso
   year={2021}
 }
 ```
-
-<!-- 
-<div align='center'>
-  <img src='https://github.com/DefTruth/lite.ai.toolkit/assets/31974251/5b28aed1-e207-4256-b3ea-3b52f9e68aed' height="90px" width="90px">
-  <img src='https://github.com/DefTruth/lite.ai.toolkit/assets/31974251/28274741-8745-4665-abff-3a384b75f7fa' height="90px" width="90px">
-  <img src='https://github.com/DefTruth/lite.ai.toolkit/assets/31974251/64fea806-f13b-4dc9-98fc-cd01319b75f4' height="90px" width="90px">
-  <img src='https://github.com/DefTruth/lite.ai.toolkit/assets/31974251/c802858c-6899-4246-8839-5721c43faffe' height="90px" width="90px">
-  <img src='https://github.com/DefTruth/lite.ai.toolkit/assets/31974251/20a18d56-297c-4c72-8153-76d4380fc9ec' height="90px" width="90px">
-  <img src='https://github.com/DefTruth/lite.ai.toolkit/assets/31974251/f4dd5263-8514-4bb0-a0dd-dbe532481aff' height="90px" width="90px">
-  <img src='https://github.com/DefTruth/lite.ai.toolkit/assets/31974251/6344f307-15e3-4593-9866-50f5ee777f43' height="90px" width="90px">
-  <img src='https://github.com/DefTruth/lite.ai.toolkit/assets/31974251/f8d65d8c-2a3d-4634-9169-3bc36452d997' height="90px" width="90px">  
-  <br>
-  <img src='https://github.com/DefTruth/lite.ai.toolkit/assets/31974251/3d8ec05e-f850-40e5-b4a9-2914c4ac5b9e' height="90px" width="90px">
-  <img src='https://github.com/DefTruth/lite.ai.toolkit/assets/31974251/5684e1d9-b3b1-45af-ac38-d9201490d46e' height="90px" width="90px">
-  <img src='https://github.com/DefTruth/lite.ai.toolkit/assets/31974251/b6a431d2-225b-416b-8a1e-cf9617d79a63' height="90px" width="90px">
-  <img src='https://github.com/DefTruth/lite.ai.toolkit/assets/31974251/84d3ed6a-b711-4c0a-8e92-a2da05a0d04e' height="90px" width="90px">
-  <img src='https://github.com/DefTruth/lite.ai.toolkit/assets/31974251/157b9e11-fc92-445b-ae0d-0d859c8663ee' height="90px" width="90px">
-  <img src='https://github.com/DefTruth/lite.ai.toolkit/assets/31974251/ef0eeabe-6dbe-4837-9aad-b806a8398697' height="90px" width="90px">  
-  <img src='https://github.com/DefTruth/lite.ai.toolkit/assets/31974251/7d3e929e-c363-4457-862c-8b725f0463ec' height="90px" width="90px">
-  <img src='https://github.com/DefTruth/lite.ai.toolkit/assets/31974251/95106e7e-c6bc-433d-b20c-95b579e85a06' height="90px" width="90px">
-</div>  
-
--->
 
 ## Features 👏👋
 
@@ -104,6 +82,11 @@ You can download the prebuilt lite.ai.tooklit library and test resources from [t
 export LITE_AI_TAG_URL=https://github.com/DefTruth/lite.ai.toolkit/releases/download/v0.2.0
 wget ${LITE_AI_TAG_URL}/lite-ort1.17.1+ocv4.9.0+ffmpeg4.2.2-linux-x86_64.tgz
 wget ${LITE_AI_TAG_URL}/yolov5s.onnx && wget ${LITE_AI_TAG_URL}/test_yolov5.jpg
+```
+#### TensorRT: Boost inference performance with NVIDIA GPU via TensorRT.
+Run `bash ./build.sh tensorrt` to build lite.ai.toolkit with TensorRT support, and then test yolov5 with the codes:
+```c++
+lite::trt::cv::detection::YOLOV5 *yolov5 = new lite::trt::cv::detection::YOLOV5(engine_path);
 ```
 
 ## Quick Setup 👀
@@ -239,6 +222,15 @@ generate_bboxes num: 48
 * ✔️ = known work, but unofficial supported now.
 * ❔ = in my plan, but not coming soon, maybe a few months later.
 
+### NVIDIA GPU Inference: TensorRT
+
+|||||
+|:---:|:---:|:---:|:---:|
+|[YOLOv5](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolov5.cpp)|[YOLOv6](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolov6.cpp)|[YOLOv8](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolov8.cpp)|[YOLOv8Face](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolov8face.cpp)|
+|[YOLOv5Face](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolo5face.cpp)|[YOLOv5BlazeFace](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolov5_blazeface.cpp)|[YOLOX](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolox.cpp)|[StableDiffusion](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/sd/test_lite_sd_pipeline.cpp)|
+
+
+### CPU Inference: ONNXRuntime, MNN, NCNN and TNN
 |                                                       Class                                                       | Size  |       Type       |                                                          Demo                                                          | ONNXRuntime | MNN | NCNN | TNN | Linux | MacOS | Windows | Android |
 |:-----------------------------------------------------------------------------------------------------------------:|:-----:|:----------------:|:----------------------------------------------------------------------------------------------------------------------:|:-----------:|:---:|:----:|:---:|:-----:|:-----:|:-------:|:-------:|
 |                                  [YoloV5](https://github.com/ultralytics/yolov5)                                  |  28M  |   *detection*    |          [demo](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolov5.cpp)           |      ✅      |  ✅  |  ✅   |  ✅  |   ✅   |  ✔️   |   ✔️    |    ❔    |
