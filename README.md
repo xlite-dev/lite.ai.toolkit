@@ -86,7 +86,8 @@ wget ${LITE_AI_TAG_URL}/yolov5s.onnx && wget ${LITE_AI_TAG_URL}/test_yolov5.jpg
 #### 🎉🎉TensorRT: Boost inference performance with NVIDIA GPU via TensorRT.
 Run `bash ./build.sh tensorrt` to build lite.ai.toolkit with TensorRT support, and then test yolov5 with the codes below. Please check [build.sh](./build.sh), [tensorrt-linux-x86_64-install.zh.md](./docs/tensorrt/tensorrt-linux-x86_64.zh.md) and [test_lite_yolov5.cpp](https://github.com/DefTruth/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_yolov5.cpp) for more details.
 ```c++
-lite::trt::cv::detection::YOLOV5 *yolov5 = new lite::trt::cv::detection::YOLOV5(engine_path);
+// trtexec --onnx=yolov5s.onnx --saveEngine=yolov5s.engine
+auto *yolov5 = new lite::trt::cv::detection::YOLOV5(engine_path);
 ```
 
 ## Quick Setup 👀
