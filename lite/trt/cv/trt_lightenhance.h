@@ -1,5 +1,5 @@
 //
-// Created by root on 10/22/24.
+// Created by wangzijian on 10/22/24.
 //
 
 #ifndef LITE_AI_TOOLKIT_TRT_LIGHTENHANCE_H
