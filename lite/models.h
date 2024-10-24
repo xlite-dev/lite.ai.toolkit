@@ -114,6 +114,7 @@
 #include "lite/ort/cv/face_parsing_bisenet_dyn.h"
 #include "lite/ort/cv/yolofacev8.h"
 #include "lite/ort/cv/light_enhance.h"
+#include "lite/ort/cv/real_esr_gan.h"
 #include "lite/ort/sd/clip.h"
 #include "lite/ort/sd/unet.h"
 #include "lite/ort/sd/vae.h"
@@ -498,6 +499,7 @@ namespace lite
       typedef ortcv::FaceParsingBiSeNetDyn _ONNXFaceParsingBiSeNetDyn;
       typedef ortcv::YoloFaceV8 _ONNXYOLOFaceNet;
       typedef ortcv::LightEnhance _ONNXLightEnhance;
+      typedef ortcv::RealESRGAN _ONNXRealESRGAN;
 
       // 1. classification
       namespace classification
@@ -662,6 +664,10 @@ namespace lite
       namespace lightenhance
       {
           typedef  _ONNXLightEnhance LightEnhance;
+      }
+      namespace upscale
+      {
+          typedef  _ONNXRealESRGAN RealESRGAN;
       }
       // 11. super resolution
       namespace resolution
