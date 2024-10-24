@@ -94,17 +94,29 @@ BasicOrtHandler::~BasicOrtHandler()
 
 void BasicOrtHandler::print_debug_string()
 {
-  std::cout << "LITEORT_DEBUG LogId: " << onnx_path << "\n";
-  std::cout << "=============== Input-Dims ==============\n";
-  std::cout << "Name: " << input_node_names[0] << "\n";
-  for (unsigned int i = 0; i < input_node_dims.size(); ++i)
-    std::cout << "Dims: " << input_node_dims.at(i) << "\n";
-  std::cout << "=============== Output-Dims ==============\n";
-  for (unsigned int i = 0; i < num_outputs; ++i)
-    for (unsigned int j = 0; j < output_node_dims.at(i).size(); ++j)
-      std::cout << "Output: " << i << " Name: "
-                << output_node_names.at(i) << " Dim: " << j << " :"
-                << output_node_dims.at(i).at(j) << std::endl;
-  std::cout << "========================================\n";
+    std::cout << "LITEORT_DEBUG LogId: " << onnx_path << "\n";
+    std::cout << "=============== Input-Dims ==============\n";
+    std::cout << "Name: " << input_node_names[0] << "\n";
+    for (unsigned int i = 0; i < input_node_dims.size(); ++i) {
+        // 判断是否为动态维度（-1）
+        if (input_node_dims.at(i) == -1)
+            std::cout << "Dims: dynamic\n";
+        else
+            std::cout << "Dims: " << input_node_dims.at(i) << "\n";
+    }
+
+    std::cout << "=============== Output-Dims ==============\n";
+    for (unsigned int i = 0; i < num_outputs; ++i) {
+        for (unsigned int j = 0; j < output_node_dims.at(i).size(); ++j) {
+            // 判断是否为动态维度（-1）
+            if (output_node_dims.at(i).at(j) == -1)
+                std::cout << "Output: " << i << " Name: " << output_node_names.at(i)
+                          << " Dim: " << j << " : dynamic\n";
+            else
+                std::cout << "Output: " << i << " Name: " << output_node_names.at(i)
+                          << " Dim: " << j << " :" << output_node_dims.at(i).at(j) << "\n";
+        }
+    }
+    std::cout << "========================================\n";
 }
 
