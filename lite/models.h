@@ -134,6 +134,7 @@
 #include "lite/trt/cv/trt_yolov6.h"
 #include "lite/trt/cv/trt_yolov5_blazeface.h"
 #include "lite/trt/cv/trt_lightenhance.h"
+#include "lite/trt/cv/trt_realesrgan.h"
 #include "lite/trt/sd/trt_clip.h"
 #include "lite/trt/sd/trt_vae.h"
 #include "lite/trt/sd/trt_unet.h"
@@ -729,6 +730,7 @@ namespace lite{
             typedef trtcv::TRTYoloV6 _TRT_YOLOv6;
             typedef trtcv::TRTYOLO5Face _TRT_YOLO5Face;
             typedef trtcv::TRTLightEnhance _TRT_LightEnhance;
+            typedef trtcv::TRTRealESRGAN _TRT_RealESRGAN;
             namespace classification
             {
 
@@ -751,6 +753,10 @@ namespace lite{
             namespace lightenhance
             {
                 typedef _TRT_LightEnhance LightEnhance;
+            }
+            namespace upscale
+            {
+                typedef _TRT_RealESRGAN RealESRGAN;
             }
         }
 
