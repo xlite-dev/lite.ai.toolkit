@@ -42,7 +42,7 @@ static void test_tensorrt()
 
 static void test_lite()
 {
-//    test_default();
+    test_default();
     test_tensorrt();
 }
 
