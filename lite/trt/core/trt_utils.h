@@ -27,6 +27,7 @@ namespace trtcv
 
             LITE_EXPORTS void trt_generate_latents(std::vector<float>& latents, int batch_size, int unet_channels, int latent_height, int latent_width, float init_noise_sigma);
         }
+        LITE_EXPORTS void remove_small_connected_area(cv::Mat &alpha_pred, float threshold);
     }
 }
 
