@@ -132,6 +132,7 @@
 #include "lite/trt/cv/trt_yolox.h"
 #include "lite/trt/cv/trt_yolov8.h"
 #include "lite/trt/cv/trt_yolov6.h"
+#include "lite/trt/cv/trt_modnet.h"
 #include "lite/trt/cv/trt_yolov5_blazeface.h"
 #include "lite/trt/cv/trt_lightenhance.h"
 #include "lite/trt/cv/trt_realesrgan.h"
@@ -731,9 +732,14 @@ namespace lite{
             typedef trtcv::TRTYOLO5Face _TRT_YOLO5Face;
             typedef trtcv::TRTLightEnhance _TRT_LightEnhance;
             typedef trtcv::TRTRealESRGAN _TRT_RealESRGAN;
+            typedef trtcv::TRTMODNet _TRT_MODNet;
             namespace classification
             {
 
+            }
+            namespace matting
+            {
+                typedef _TRT_MODNet MODNet;
             }
             namespace detection
             {
