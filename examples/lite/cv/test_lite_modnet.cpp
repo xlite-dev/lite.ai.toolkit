@@ -94,6 +94,55 @@ static void test_onnxruntime()
 #endif
 }
 
+
+
+static void test_tensorrt()
+{
+#ifdef ENABLE_TENSORRT
+    std::string engine_path = "../../../examples/hub/trt/modnet_fp16.engine";
+    std::string test_img_path = "../../../examples/lite/resources/test_lite_matting_input.jpg";
+    std::string test_bgr_path = "../../../examples/lite/resources/test_lite_matting_bgr.jpg";
+    std::string save_fgr_path = "../../../examples/logs/test_lite_modnet_fgr_trt.jpg";
+    std::string save_pha_path = "../../../examples/logs/test_lite_modnet_pha_trt.jpg";
+    std::string save_merge_path = "../../../examples/logs/test_lite_modnet_merge_trt.jpg";
+    std::string save_swap_path = "../../../examples/logs/test_lite_modnet_swap_trt.jpg";
+
+
+    lite::trt::cv::matting::MODNet  *modnet = new lite::trt::cv::matting::MODNet (engine_path);
+
+    lite::types::MattingContent content;
+    cv::Mat img_bgr = cv::imread(test_img_path);
+    cv::Mat bgr_mat = cv::imread(test_bgr_path);
+
+    // 1. image matting.
+    modnet->detect(img_bgr, content, true, true);
+
+    if (content.flag)
+    {
+        if (!content.fgr_mat.empty()) cv::imwrite(save_fgr_path, content.fgr_mat);
+        if (!content.pha_mat.empty()) cv::imwrite(save_pha_path, content.pha_mat * 255.);
+        if (!content.merge_mat.empty()) cv::imwrite(save_merge_path, content.merge_mat);
+        // swap background
+        cv::Mat out_mat;
+        if (!content.fgr_mat.empty())
+            lite::utils::swap_background(content.fgr_mat, content.pha_mat, bgr_mat, out_mat, true);
+        else
+            lite::utils::swap_background(img_bgr, content.pha_mat, bgr_mat, out_mat, false);
+
+        if (!out_mat.empty())
+        {
+            cv::imwrite(save_swap_path, out_mat);
+            std::cout << "Saved Swap Image Done!" << std::endl;
+        }
+
+        std::cout << "Default Version MGMatting Done!" << std::endl;
+    }
+
+    delete modnet;
+#endif
+}
+
+
 static void test_mnn()
 {
 #ifdef ENABLE_MNN
@@ -233,11 +282,12 @@ static void test_tnn()
 
 static void test_lite()
 {
-  test_default();
-  test_onnxruntime();
-  test_mnn();
-  test_ncnn();
-  test_tnn();
+//  test_default();
+//  test_onnxruntime();
+//  test_mnn();
+//  test_ncnn();
+//  test_tnn();
+    test_tensorrt();
 }
 
 int main(__unused int argc, __unused char *argv[])
