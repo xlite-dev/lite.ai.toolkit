@@ -115,6 +115,7 @@
 #include "lite/ort/cv/yolofacev8.h"
 #include "lite/ort/cv/light_enhance.h"
 #include "lite/ort/cv/real_esr_gan.h"
+#include "lite/ort/cv/face_68landmarks.h"
 #include "lite/ort/sd/clip.h"
 #include "lite/ort/sd/unet.h"
 #include "lite/ort/sd/vae.h"
@@ -502,6 +503,7 @@ namespace lite
       typedef ortcv::YoloFaceV8 _ONNXYOLOFaceNet;
       typedef ortcv::LightEnhance _ONNXLightEnhance;
       typedef ortcv::RealESRGAN _ONNXRealESRGAN;
+      typedef ortcv::Face_68Landmarks _ONNXFace_68Landmarks;
 
       // 1. classification
       namespace classification
@@ -618,6 +620,7 @@ namespace lite
         typedef _ONNXCavaGhostArcFace CavaGhostArcFace;
         typedef _ONNXCavaCombinedFace CavaCombinedFace;
         typedef _ONNXMobileSEFocalFace MobileSEFocalFace;
+        typedef _ONNXFace_68Landmarks Face_68Landmarks;
 
       }
       // 5. segmentation
