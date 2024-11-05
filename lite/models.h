@@ -116,6 +116,7 @@
 #include "lite/ort/cv/light_enhance.h"
 #include "lite/ort/cv/real_esr_gan.h"
 #include "lite/ort/cv/face_68landmarks.h"
+#include "lite/ort/cv/face_recognizer.h"
 #include "lite/ort/sd/clip.h"
 #include "lite/ort/sd/unet.h"
 #include "lite/ort/sd/vae.h"
@@ -504,6 +505,7 @@ namespace lite
       typedef ortcv::LightEnhance _ONNXLightEnhance;
       typedef ortcv::RealESRGAN _ONNXRealESRGAN;
       typedef ortcv::Face_68Landmarks _ONNXFace_68Landmarks;
+      typedef ortcv::Face_Recognizer _ONNXFace_Recognizer;
 
       // 1. classification
       namespace classification
@@ -621,7 +623,7 @@ namespace lite
         typedef _ONNXCavaCombinedFace CavaCombinedFace;
         typedef _ONNXMobileSEFocalFace MobileSEFocalFace;
         typedef _ONNXFace_68Landmarks Face_68Landmarks;
-
+        typedef _ONNXFace_Recognizer Face_Recognizer;
       }
       // 5. segmentation
       namespace segmentation
