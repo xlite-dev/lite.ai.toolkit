@@ -91,7 +91,7 @@ void TRTMODNet::generate_matting(float *trt_outputs, const cv::Mat &mat, types::
     const unsigned int out_w = 512;
 
     cv::Mat alpha_pred(out_h, out_w, CV_32FC1, trt_outputs);
-    cv::imwrite("/home/lite.ai.toolkit/modnet.jpg",alpha_pred);
+
     // post process
     if (remove_noise) trtcv::utils::remove_small_connected_area(alpha_pred,0.05f);
     // resize alpha
