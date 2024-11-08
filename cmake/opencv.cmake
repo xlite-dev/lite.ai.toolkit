@@ -19,9 +19,9 @@ link_directories(${OpenCV_DIR}/lib)
 
 if(NOT WIN32)
     if(ENABLE_OPENCV_VIDEOIO OR ENABLE_TEST)
-        set(OpenCV_LIBS opencv_core opencv_imgproc opencv_imgcodecs opencv_video opencv_videoio)
+        set(OpenCV_LIBS opencv_core opencv_imgproc opencv_imgcodecs opencv_video opencv_videoio opencv_calib3d)
     else()
-        set(OpenCV_LIBS opencv_core opencv_imgproc opencv_imgcodecs) # no videoio, video module
+        set(OpenCV_LIBS opencv_core opencv_imgproc opencv_imgcodecs opencv_calib3d) # no videoio, video module
     endif()
 else()
     set(OpenCV_LIBS opencv_world490)
