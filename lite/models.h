@@ -117,6 +117,9 @@
 #include "lite/ort/cv/real_esr_gan.h"
 #include "lite/ort/cv/face_68landmarks.h"
 #include "lite/ort/cv/face_recognizer.h"
+#include "lite/ort/cv/face_swap.h"
+#include "lite/ort/cv/face_restoration.h"
+#include "lite/ort/cv/face_fusion_pipeline.h"
 #include "lite/ort/sd/clip.h"
 #include "lite/ort/sd/unet.h"
 #include "lite/ort/sd/vae.h"
@@ -506,6 +509,9 @@ namespace lite
       typedef ortcv::RealESRGAN _ONNXRealESRGAN;
       typedef ortcv::Face_68Landmarks _ONNXFace_68Landmarks;
       typedef ortcv::Face_Recognizer _ONNXFace_Recognizer;
+      typedef ortcv::Face_Swap _ONNXFace_Swap;
+      typedef ortcv::Face_Restoration _ONNXFace_Restoration;
+      typedef ortcv::Face_Fusion_Pipeline _ONNXFace_Fusion_Pipeline;
 
       // 1. classification
       namespace classification
@@ -582,6 +588,25 @@ namespace lite
         namespace align3d
         {
 
+        }
+
+        namespace swap
+        {
+            namespace facefusion
+            {
+                typedef _ONNXYOLOFaceNet YOLOV8Face;
+                typedef _ONNXFace_Swap InSwapper;
+                typedef _ONNXFace_Restoration GFPGAN;
+                typedef _ONNXFace_68Landmarks Face_68Landmarks;
+                typedef _ONNXFace_Recognizer Face_Recognizer;
+                typedef _ONNXFace_Fusion_Pipeline PipeLine;
+            }
+            typedef _ONNXFace_Swap InSwapper;
+        }
+
+        namespace restoration
+        {
+            typedef _ONNXFace_Restoration GFPGAN;
         }
 
         namespace pose
