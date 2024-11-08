@@ -103,3 +103,39 @@ void Face_Recognizer::detect(cv::Mat &input_mat, std::vector<cv::Point2f> &face_
     std::cout<<"done!"<<std::endl;
 
 }
+
+void Face_Recognizer::detect(cv::Mat &input_mat, std::vector<cv::Point2f> &face_landmark_5, std::vector<float> &embeding) {
+    cv::Mat ori_image = input_mat.clone();
+
+    cv::Mat crop_image = preprocess(input_mat,face_landmark_5,ori_image);
+    Ort::Value input_tensor = transform(crop_image);
+    Ort::RunOptions runOptions;
+
+    // 2.infer
+    auto output_tensors = ort_session->Run(
+            runOptions, input_node_names.data(),
+            &input_tensor, 1, output_node_names.data(), num_outputs
+    );
+
+    float *pdata = output_tensors[0].GetTensorMutableData<float>();
+    std::vector<int64_t> out_shape = output_tensors[0].GetTensorTypeAndShapeInfo().GetShape();
+
+    embeding.assign(pdata,pdata + 512);
+    std::vector<float> normal_embeding(pdata,pdata + 512);
+
+
+
+    // 计算L2范数
+    float norm = 0.0f;
+    for (const auto &val : normal_embeding) {
+        norm += val * val;
+    }
+    norm = std::sqrt(norm);
+
+    // 归一化
+    for (auto &val : normal_embeding) {
+        val /= norm;
+    }
+
+    std::cout<<"done!"<<std::endl;
+}

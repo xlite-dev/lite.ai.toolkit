@@ -34,6 +34,9 @@ namespace ortcv{
 
     public:
         void detect(cv::Mat &input_mat,std::vector<cv::Point2f> &face_landmark_5);
+
+        void detect(cv::Mat &input_mat,std::vector<cv::Point2f> &face_landmark_5,std::vector<float> &embeding);
+
     };
 }
 
