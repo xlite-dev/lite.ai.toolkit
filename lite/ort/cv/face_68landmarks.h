@@ -26,11 +26,15 @@ namespace ortcv{
         Ort::Value transform(const cv::Mat &mat_rs) override;
 
 
-        void postprocess(std::vector<Ort::Value> &ort_outputs,const std::string &output_path);
+//        void postprocess(std::vector<Ort::Value> &ort_outputs,const std::string &output_path);
+
+        void postprocess(std::vector<Ort::Value> &ort_outputs, std::vector<cv::Point2f> &face_landmark_5of68);
+
 
     public:
 
-        void detect(const cv::Mat &input_mat,const lite::types::BoundingBoxType<float, float> &bbox,const std::string &output_path);
+        void detect(const cv::Mat &input_mat,const lite::types::BoundingBoxType<float, float> &bbox, std::vector<cv::Point2f> &face_landmark_5of68);
+
 
 
     };
