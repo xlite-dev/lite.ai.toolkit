@@ -20,9 +20,8 @@ static void test_default()
     bbox.y2 = 624;
 
     cv::Mat img_bgr = cv::imread(test_img_path);
-
-    face68Landmarks->detect(img_bgr, bbox, save_img_path);
-
+    std::vector<cv::Point2f> face_landmark_5of68;
+    face68Landmarks->detect(img_bgr, bbox, face_landmark_5of68);
 
     std::cout<<"face id detect done!"<<std::endl;
 
