@@ -22,7 +22,8 @@ static void test_default()
     };
     cv::Mat img_bgr = cv::imread(test_img_path);
 
-    face_recognizer->detect(img_bgr,face_landmark_5);
+    std::vector<float> source_image_embeding;
+    face_recognizer->detect(img_bgr,face_landmark_5,source_image_embeding);
 
 
     std::cout<<"face id detect done!"<<std::endl;
