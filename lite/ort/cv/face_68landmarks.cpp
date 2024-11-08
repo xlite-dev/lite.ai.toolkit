@@ -73,7 +73,7 @@ Ort::Value Face_68Landmarks::transform(const cv::Mat &mat_rs) {
 
 
 void Face_68Landmarks::detect(const cv::Mat &input_mat, const lite::types::BoundingBoxType<float, float> &bbox,
-                              const std::string &output_path) {
+                               std::vector<cv::Point2f> &face_landmark_5of68) {
     if (input_mat.empty()) return;
 
     img_with_landmarks = input_mat.clone();
@@ -91,9 +91,10 @@ void Face_68Landmarks::detect(const cv::Mat &input_mat, const lite::types::Bound
             &input_tensor, 1, output_node_names.data(), num_outputs
     );
 
-    postprocess(output_tensors,output_path);
+    postprocess(output_tensors,face_landmark_5of68);
 
 }
+
 
 std::vector<cv::Point2f> convert_face_landmark_68_to_5(const std::vector<cv::Point2f>& landmark_68) {
     std::vector<cv::Point2f> face_landmark_5;
@@ -130,9 +131,8 @@ std::vector<cv::Point2f> convert_face_landmark_68_to_5(const std::vector<cv::Poi
 }
 
 
-
-
-void Face_68Landmarks::postprocess(std::vector<Ort::Value> &ort_outputs, const std::string &output_path) {
+void Face_68Landmarks::postprocess(std::vector<Ort::Value> &ort_outputs,
+                                   std::vector<cv::Point2f> &face_landmark_5of68) {
     float *pdata = ort_outputs[0].GetTensorMutableData<float>();
     std::vector<int64_t> out_shape = ort_outputs[0].GetTensorTypeAndShapeInfo().GetShape();
     std::vector<cv::Point2f> landmarks;
@@ -151,20 +151,10 @@ void Face_68Landmarks::postprocess(std::vector<Ort::Value> &ort_outputs, const s
     cv::invertAffineTransform(affine_matrix, inverse_affine_matrix);
     // 应用逆仿射变换到 face_landmark_68
     cv::transform(landmarks, landmarks, inverse_affine_matrix);
-//
-//    // 将 68 点关键点转换为 5 点
-//    std::vector<cv::Point2f> face_landmark_5of68 = convert_face_landmark_68_to_5(landmarks);
-//
-    // 绘制每个关键点
-    for (const auto& point : landmarks) {
-        cv::circle(img_with_landmarks, cv::Point(static_cast<int>(point.x), static_cast<int>(point.y)), 3, cv::Scalar(0, 255, 0), -1);
-    }
 
-//    // 保存带关键点的图像
-    cv::imwrite(output_path, img_with_landmarks);
-
-
-
+    face_landmark_5of68 = convert_face_landmark_68_to_5(landmarks);
 
 
 }
+
+
