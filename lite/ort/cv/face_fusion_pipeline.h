@@ -31,7 +31,7 @@ namespace ortcv{
         std::unique_ptr<Face_Swap> face_swap;
 
     public:
-        void inference(const std::string &source_image,const std::string &target_image,const std::string &save_image);
+        void detect(const std::string &source_image,const std::string &target_image,const std::string &save_image);
     };
 }
 

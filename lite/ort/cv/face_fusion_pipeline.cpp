@@ -17,7 +17,7 @@ Face_Fusion_Pipeline::Face_Fusion_Pipeline(const std::string &face_detect_onnx_p
     face_restoration = std::make_unique<Face_Restoration>(face_restoration_onnx_path);
 }
 
-void Face_Fusion_Pipeline::inference(const std::string &source_image, const std::string &target_image,const std::string &save_image_path) {
+void Face_Fusion_Pipeline::detect(const std::string &source_image, const std::string &target_image,const std::string &save_image_path) {
     std::vector<lite::types::Boxf> detected_boxes;
     cv::Mat img_bgr = cv::imread(source_image);
     face_detect->detect(img_bgr,detected_boxes);
