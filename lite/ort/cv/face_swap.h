@@ -8,6 +8,7 @@
 #include "lite/ort/core/ort_types.h"
 #include "lite/ort/core/ort_utils.h"
 #include "lite/ort/cv/face_restoration.h"
+#include "lite/ort/cv/face_utils.h"
 
 namespace ortcv{
     class LITE_EXPORTS Face_Swap : public BasicOrtHandler
@@ -21,24 +22,10 @@ namespace ortcv{
 
         Ort::Value transform(const cv::Mat &mat_rs) override;
 
-        std::pair<cv::Mat, cv::Mat> warp_face_by_face_landmark_5(cv::Mat input_mat, std::vector<cv::Point2f> face_landmark_5);
-
-        void postprocess(cv::Mat &input_mat,std::string &output_path);
-
-        cv::Mat create_static_box_mask(std::vector<float> crop_size);
-
     private:
-        std::vector<cv::Point2f> face_template = {
-                cv::Point2f(0.36167656, 0.40387734),
-                cv::Point2f(0.63696719, 0.40235469),
-                cv::Point2f(0.50019687, 0.56044219),
-                cv::Point2f(0.38710391, 0.72160547),
-                cv::Point2f(0.61507734, 0.72034453)
-        };
 
-        float face_mask_blur = 0.3;
-        std::vector<int> face_mask_padding = {0,0,0,0};
         std::vector<cv::Mat> crop_list;
+
         cv::Mat affine_martix;
 
     public:

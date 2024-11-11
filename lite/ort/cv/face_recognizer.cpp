@@ -7,42 +7,40 @@ using ortcv::Face_Recognizer;
 
 std::pair<cv::Mat, cv::Mat> Face_Recognizer::warp_face_by_face_landmark_5(cv::Mat input_mat, std::vector<cv::Point2f> face_landmark_5)
 {
-    // 创建标准模板点
+
     std::vector<cv::Point2f> normed_template;
-    for(auto current_template : face_template)  // face_template应该是类的成员变量
+    for(auto current_template : face_utils::face_template_112)
     {
-        current_template.x = current_template.x * 112;  // 112是crop_size
-        current_template.y = current_template.y * 112;  // 注意：原代码中y使用了x，这里修正为y
+        current_template.x = current_template.x * 112;
+        current_template.y = current_template.y * 112;
         normed_template.emplace_back(current_template);
     }
 
-    // 估计仿射变换矩阵
     cv::Mat inliers;
     cv::Mat affine_matrix = cv::estimateAffinePartial2D(
-            face_landmark_5,      // 源点
-            normed_template,      // 目标点
-            inliers,             // 内点掩码
-            cv::RANSAC,          // 方法
-            100                  // ransacReprojThreshold
+            face_landmark_5,
+            normed_template,
+            inliers,
+            cv::RANSAC,
+            100
     );
 
-    // 检查变换矩阵是否有效
+
     if (affine_matrix.empty()) {
         throw std::runtime_error("Failed to estimate affine transformation");
     }
 
-    // 进行仿射变换
+
     cv::Mat crop_img;
     cv::warpAffine(
-            input_mat,           // 输入图像
-            crop_img,           // 输出图像
-            affine_matrix,      // 变换矩阵
-            cv::Size(112, 112), // 输出大小
-            cv::INTER_AREA,     // 插值方法
-            cv::BORDER_REPLICATE // 边界处理方式
+            input_mat,
+            crop_img,
+            affine_matrix,
+            cv::Size(112, 112),
+            cv::INTER_AREA,
+            cv::BORDER_REPLICATE
     );
 
-    // 返回结果对
     return std::make_pair(crop_img, affine_matrix);
 }
 
@@ -88,14 +86,13 @@ void Face_Recognizer::detect(cv::Mat &input_mat, std::vector<cv::Point2f> &face_
     std::vector<int64_t> out_shape = output_tensors[0].GetTensorTypeAndShapeInfo().GetShape();
 
     std::vector<float> output(pdata, pdata + 512);
-    // 计算L2范数
+
     float norm = 0.0f;
     for (const auto &val : output) {
         norm += val * val;
     }
     norm = std::sqrt(norm);
 
-    // 归一化
     for (auto &val : output) {
         val /= norm;
     }
@@ -124,15 +121,12 @@ void Face_Recognizer::detect(cv::Mat &input_mat, std::vector<cv::Point2f> &face_
     std::vector<float> normal_embeding(pdata,pdata + 512);
 
 
-
-    // 计算L2范数
     float norm = 0.0f;
     for (const auto &val : normal_embeding) {
         norm += val * val;
     }
     norm = std::sqrt(norm);
 
-    // 归一化
     for (auto &val : normal_embeding) {
         val /= norm;
     }

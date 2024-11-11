@@ -10,11 +10,11 @@ Face_Fusion_Pipeline::Face_Fusion_Pipeline(const std::string &face_detect_onnx_p
                                            const std::string &face_recognizer_onnx_path,
                                            const std::string &face_swap_onnx_path,
                                            const std::string &face_restoration_onnx_path) {
-    face_detect  = std::make_unique<YoloFaceV8>(face_detect_onnx_path);
-    face_landmarks = std::make_unique<Face_68Landmarks>(face_landmarks_68_onnx_path);
-    face_recognizer = std::make_unique<Face_Recognizer>(face_recognizer_onnx_path);
-    face_swap = std::make_unique<Face_Swap>(face_swap_onnx_path);
-    face_restoration = std::make_unique<Face_Restoration>(face_restoration_onnx_path);
+    face_detect  = std::make_unique<YoloFaceV8>(face_detect_onnx_path,6);
+    face_landmarks = std::make_unique<Face_68Landmarks>(face_landmarks_68_onnx_path,6);
+    face_recognizer = std::make_unique<Face_Recognizer>(face_recognizer_onnx_path,6);
+    face_swap = std::make_unique<Face_Swap>(face_swap_onnx_path,6);
+    face_restoration = std::make_unique<Face_Restoration>(face_restoration_onnx_path,6);
 }
 
 void Face_Fusion_Pipeline::detect(const std::string &source_image, const std::string &target_image,const std::string &save_image_path) {
@@ -22,10 +22,10 @@ void Face_Fusion_Pipeline::detect(const std::string &source_image, const std::st
     cv::Mat img_bgr = cv::imread(source_image);
     face_detect->detect(img_bgr,detected_boxes);
 
-    int position = 0; // 0号位置的脸部
+    int position = 0; // position number 0
     auto test_bounding_box = detected_boxes[0];
     std::vector<cv::Point2f> face_landmark_5of68;
-    // 这里完成了face_land_mark的操作 计算出来了引用带出来了
+
     face_landmarks->detect(img_bgr, test_bounding_box, face_landmark_5of68);
     std::vector<float> source_image_embeding;
     face_recognizer->detect(img_bgr,face_landmark_5of68,source_image_embeding);

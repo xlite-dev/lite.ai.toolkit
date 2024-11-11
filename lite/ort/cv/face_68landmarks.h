@@ -6,6 +6,9 @@
 #define LITE_AI_TOOLKIT_FACE_68LANDMARKS_H
 #include "lite/ort/core/ort_core.h"
 #include "lite/ort/core/ort_types.h"
+#include "lite/ort/core/ort_utils.h"
+#include "lite/utils.h"
+#include "lite/ort/cv/face_utils.h"
 #include "algorithm"
 
 namespace ortcv{
@@ -24,9 +27,6 @@ namespace ortcv{
         void preprocess(const lite::types::Boxf &bouding_box,const cv::Mat &input_mat,cv::Mat &crop_img);
 
         Ort::Value transform(const cv::Mat &mat_rs) override;
-
-
-//        void postprocess(std::vector<Ort::Value> &ort_outputs,const std::string &output_path);
 
         void postprocess(std::vector<Ort::Value> &ort_outputs, std::vector<cv::Point2f> &face_landmark_5of68);
 
