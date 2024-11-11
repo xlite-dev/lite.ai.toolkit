@@ -20,8 +20,6 @@ namespace ortcv {
     private:
         float mean = -127.5 / 128.0;
         float scale = 1 / 128.0;
-        // const float conf_threshold = 0.5f;
-        // const float iou_threshold = 0.4f;
         float ratio_width;
         float ratio_height;
 
