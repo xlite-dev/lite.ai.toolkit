@@ -6,9 +6,8 @@
 static void test_default()
 {
 #ifdef ENABLE_ONNXRUNTIME
-    std::string onnx_path = "/home/lite.ai.toolkit/examples/hub/onnx/cv/arcface_w600k_r50.onnx";
-    std::string test_img_path = "/home/lite.ai.toolkit/5.jpg";
-    std::string save_img_path = "/home/lite.ai.toolkit/5_1.jpg";
+    std::string onnx_path = "../../../examples/hub/onnx/cv/arcface_w600k_r50.onnx";
+    std::string test_img_path = "../../../examples/lite/resources/test_lite_facefusion_pipeline_source.jpg";
 
     // 1. Test Default Engine ONNXRuntime
     lite::cv::faceid::Face_Recognizer *face_recognizer = new lite::cv::faceid::Face_Recognizer(onnx_path);
@@ -23,6 +22,7 @@ static void test_default()
     cv::Mat img_bgr = cv::imread(test_img_path);
 
     std::vector<float> source_image_embeding;
+    
     face_recognizer->detect(img_bgr,face_landmark_5,source_image_embeding);
 
 

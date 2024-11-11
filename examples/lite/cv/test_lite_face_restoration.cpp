@@ -6,9 +6,9 @@
 static void test_default()
 {
 #ifdef ENABLE_ONNXRUNTIME
-    std::string onnx_path = "/home/lite.ai.toolkit/examples/hub/onnx/cv/gfpgan_1.4.onnx";
-    std::string test_img_path = "/home/lite.ai.toolkit/2.jpg";
-    std::string save_img_path = "/home/lite.ai.toolkit/2_face_restoration.jpg";
+    std::string onnx_path = "../../../examples/hub/onnx/cv/gfpgan_1.4.onnx";
+    std::string test_img_path = "../../../examples/lite/resources/test_lite_facefusion_pipeline_source.jpg";
+    std::string save_img_path = "../../../examples/lite/resources/test_lite_facefusion_pipeline_target.jpg";
 
     // 1. Test Default Engine ONNXRuntime
     lite::cv::face::restoration::GFPGAN *face_restoration = new  lite::cv::face::restoration::GFPGAN(onnx_path);
@@ -25,7 +25,7 @@ static void test_default()
     face_restoration->detect(img_bgr,face_landmark_5,save_img_path);
 
 
-    std::cout<<"face id detect done!"<<std::endl;
+    std::cout<<"face restoration detect done!"<<std::endl;
 
     delete face_restoration;
 #endif

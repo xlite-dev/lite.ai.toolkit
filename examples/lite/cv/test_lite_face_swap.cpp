@@ -6,21 +6,17 @@
 static void test_default()
 {
 #ifdef ENABLE_ONNXRUNTIME
-    std::string face_swap_onnx_path = "/home/lite.ai.toolkit/examples/hub/onnx/cv/inswapper_128.onnx";
-    std::string face_detect_onnx_path = "/home/lite.ai.toolkit/examples/hub/onnx/cv/yoloface_8n.onnx";
-    std::string face_landmarks_68 = "/home/lite.ai.toolkit/examples/hub/onnx/cv/2dfan4.onnx";
-    std::string face_recognizer_onnx_path = "/home/lite.ai.toolkit/examples/hub/onnx/cv/arcface_w600k_r50.onnx";;
-    std::string face_embeding_onnx_path = "/home/lite.ai.toolkit/examples/hub/onnx/cv/yoloface_8n.onnx";
+    std::string face_swap_onnx_path = "../../../examples/hub/onnx/cv/inswapper_128.onnx";
+    std::string face_detect_onnx_path = "../../../examples/hub/onnx/cv/yoloface_8n.onnx";
+    std::string face_landmarks_68 = "../../../examples/hub/onnx/cv/2dfan4.onnx";
+    std::string face_recognizer_onnx_path = "../../../examples/hub/onnx/cv/arcface_w600k_r50.onnx";;
 
-    std::string source_image_path = "/home/lite.ai.toolkit/1.jpg";
-    std::string target_image_path = "/home/lite.ai.toolkit/5.jpg";
+    std::string source_image_path = "../../../examples/lite/resources/test_lite_facefusion_pipeline_source.jpg";
+    std::string target_image_path = "../../../examples/lite/resources/test_lite_facefusion_pipeline_target.jpg";
 
     lite::cv::face::detect::YOLOV8Face *yolov8_face = new lite::cv::face::detect::YOLOV8Face(face_detect_onnx_path);
-
     lite::cv::faceid::Face_68Landmarks *face68Landmarks = new lite::cv::faceid::Face_68Landmarks(face_landmarks_68);
-
     lite::cv::faceid::Face_Recognizer *face_recognizer = new lite::cv::faceid::Face_Recognizer(face_recognizer_onnx_path);
-
     lite::cv::face::swap::InSwapper *face_swap = new lite::cv::face::swap::InSwapper(face_swap_onnx_path);
 
 
@@ -45,34 +41,9 @@ static void test_default()
     cv::Mat face_swap_image;
     face_swap->detect(target_img_bgr,source_image_embeding,target_face_landmark_5of68,face_swap_image);
 
-
-
-
-
-
-
-
-
-
-
-
-    // 1. Test Default Engine ONNXRuntime
-
-
-//    std::vector<cv::Point2f> face_landmark_5 = {
-//            cv::Point2f(568.2485f, 398.9512f),
-//            cv::Point2f(701.7346f, 399.64795f),
-//            cv::Point2f(634.2213f, 482.92694f),
-//            cv::Point2f(583.5656f, 543.10187f),
-//            cv::Point2f(684.52405f, 543.125f)
-//    };
-//    cv::Mat img_bgr = cv::imread(test_img_path);
-//
-//    face_recognizer->detect(img_bgr,face_landmark_5);
-//
-//
-//    std::cout<<"face id detect done!"<<std::endl;
-
+    delete yolov8_face;
+    delete face68Landmarks;
+    delete face_swap;
     delete face_recognizer;
 #endif
 }
