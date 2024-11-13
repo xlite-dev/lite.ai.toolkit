@@ -5,10 +5,6 @@
 #include "face_swap.h"
 using ortcv::Face_Swap;
 
-
-
-
-
 void Face_Swap::preprocess(cv::Mat &target_face, std::vector<float> source_image_embeding,
                            std::vector<cv::Point2f> target_landmark_5,std::vector<float> &processed_source_embeding,
                            cv::Mat &preprocessed_mat) {
