@@ -5,51 +5,12 @@
 #include "face_recognizer.h"
 using ortcv::Face_Recognizer;
 
-std::pair<cv::Mat, cv::Mat> Face_Recognizer::warp_face_by_face_landmark_5(cv::Mat input_mat, std::vector<cv::Point2f> face_landmark_5)
-{
-
-    std::vector<cv::Point2f> normed_template;
-    for(auto current_template : face_utils::face_template_112)
-    {
-        current_template.x = current_template.x * 112;
-        current_template.y = current_template.y * 112;
-        normed_template.emplace_back(current_template);
-    }
-
-    cv::Mat inliers;
-    cv::Mat affine_matrix = cv::estimateAffinePartial2D(
-            face_landmark_5,
-            normed_template,
-            inliers,
-            cv::RANSAC,
-            100
-    );
-
-
-    if (affine_matrix.empty()) {
-        throw std::runtime_error("Failed to estimate affine transformation");
-    }
-
-
-    cv::Mat crop_img;
-    cv::warpAffine(
-            input_mat,
-            crop_img,
-            affine_matrix,
-            cv::Size(112, 112),
-            cv::INTER_AREA,
-            cv::BORDER_REPLICATE
-    );
-
-    return std::make_pair(crop_img, affine_matrix);
-}
-
 
 cv::Mat Face_Recognizer::preprocess(cv::Mat &input_mat, std::vector<cv::Point2f> &face_landmark_5,cv::Mat &preprocessed_mat) {
     cv::Mat crop_image;
     cv::Mat affine_martix;
 
-    std::tie(crop_image,affine_martix) = warp_face_by_face_landmark_5(input_mat,face_landmark_5);
+    std::tie(crop_image,affine_martix) = face_utils::warp_face_by_face_landmark_5(input_mat,face_landmark_5,face_utils::ARCFACE_112_V2);
     crop_image.convertTo(crop_image,CV_32FC3, 1.0f / 127.5f,-1.0);
     cv::cvtColor(crop_image,crop_image,cv::COLOR_BGR2RGB);
 

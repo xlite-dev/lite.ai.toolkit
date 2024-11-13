@@ -21,9 +21,6 @@ namespace ortcv{
 
         Ort::Value transform(const cv::Mat &mat_rs) override;
 
-        std::pair<cv::Mat, cv::Mat> warp_face_by_face_landmark_5(cv::Mat input_mat,std::vector<cv::Point2f> face_landmark_5);
-
-
     public:
         void detect(cv::Mat &input_mat,std::vector<cv::Point2f> &face_landmark_5);
 
