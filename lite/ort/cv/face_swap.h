@@ -18,7 +18,8 @@ namespace ortcv{
                 BasicOrtHandler(_onnx_path, _num_threads = 1){};
         ~Face_Swap() override = default;
     private:
-        void preprocess(cv::Mat &target_face,std::vector<float> source_image_embeding,std::vector<cv::Point2f> target_landmark_5,std::vector<float> &processed_source_embeding,cv::Mat &preprocessed_mat);
+        void preprocess(cv::Mat &target_face,std::vector<float> source_image_embeding,std::vector<cv::Point2f> target_landmark_5,
+                        std::vector<float> &processed_source_embeding,cv::Mat &preprocessed_mat);
 
         Ort::Value transform(const cv::Mat &mat_rs) override;
 
