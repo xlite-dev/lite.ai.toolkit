@@ -141,6 +141,11 @@
 #include "lite/trt/cv/trt_yolov5_blazeface.h"
 #include "lite/trt/cv/trt_lightenhance.h"
 #include "lite/trt/cv/trt_realesrgan.h"
+#include "lite/trt/cv/trt_face_68landmarks.h"
+#include "lite/trt/cv/trt_face_recognizer.h"
+#include "lite/trt/cv/trt_face_swap.h"
+#include "lite/trt/cv/trt_face_restoration.h"
+#include "lite/trt/cv/trt_facefusion_pipeline.h"
 #include "lite/trt/sd/trt_clip.h"
 #include "lite/trt/sd/trt_vae.h"
 #include "lite/trt/sd/trt_unet.h"
@@ -763,6 +768,11 @@ namespace lite{
             typedef trtcv::TRTLightEnhance _TRT_LightEnhance;
             typedef trtcv::TRTRealESRGAN _TRT_RealESRGAN;
             typedef trtcv::TRTMODNet _TRT_MODNet;
+            typedef trtcv::TRTFaceFusionFace68Landmarks _TRT_FaceFusionFace68Landmarks;
+            typedef trtcv::TRTFaceFusionFaceRecognizer _TRTFaceFusionFaceRecognizer;
+            typedef trtcv::TRTFaceFusionFaceSwap _TRTFaceFusionFaceSwap;
+            typedef trtcv::TRTFaceFusionFaceRestoration _TRTFaceFusionFaceRestoration;
+            typedef trtcv::TRTFaceFusionPipeLine _TRTFaceFusionPipeLine;
             namespace classification
             {
 
@@ -785,6 +795,20 @@ namespace lite{
                     typedef _TRT_YOLOFaceNet YOLOV8Face;
                     typedef _TRT_YOLO5Face  YOLOV5Face;
                 }
+                namespace swap
+                {
+                    typedef _TRTFaceFusionFaceSwap FaceFusionFaceSwap;
+                    typedef _TRTFaceFusionPipeLine FaceFusionPipeLine;
+                }
+                namespace restoration
+                {
+                    typedef _TRTFaceFusionFaceRestoration TRTGFPGAN;
+                }
+            }
+            namespace faceid
+            {
+                typedef _TRT_FaceFusionFace68Landmarks FaceFusionFace68Landmarks;
+                typedef _TRTFaceFusionFaceRecognizer FaceFusionFaceRecognizer;
             }
             namespace lightenhance
             {
