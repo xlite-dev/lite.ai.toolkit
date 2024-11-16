@@ -15,6 +15,8 @@
 #include <thread>
 #include <atomic>
 #include <memory>
+#include <fstream>
+
 
 // 定义任务结构体
 struct InferenceTask {

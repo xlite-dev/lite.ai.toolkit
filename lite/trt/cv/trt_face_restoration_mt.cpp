@@ -1,6 +1,5 @@
 // trt_face_restoration_mt.cpp
 #include "trt_face_restoration_mt.h"
-#include <fstream>
 
 trt_face_restoration_mt::trt_face_restoration_mt(std::string& model_path, size_t num_threads)
         : num_threads(num_threads) {
