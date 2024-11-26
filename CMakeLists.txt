@@ -19,13 +19,18 @@ if (CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "-std=c++17 -Wno-deprecated ${CMAKE_CXX_FLAGS} ")
     message(STATUS "[Linux GCC Compiler Options]+:-std=c++17 -Wno-deprecated")
 endif ()
+# 指定CUDA编译器
+set(CMAKE_CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
+set(CMAKE_CUDA_ARCHITECTURES 89) # For RTX 20xx series
 
+# 启用 CUDA
+enable_language(CUDA)
 set(LITE_AI_ROOT_DIR ${CMAKE_SOURCE_DIR})
 
-option(ENABLE_TEST "build test examples." OFF)
+option(ENABLE_TEST "build test examples." ON)
 option(ENABLE_DEBUG_STRING "enable DEBUG string or not" ON)
 option(ENABLE_ONNXRUNTIME "enable ONNXRuntime engine" ON)
-option(ENABLE_TENSORRT "enable TensorRT engine" OFF)
+option(ENABLE_TENSORRT "enable TensorRT engine" ON)
 option(ENABLE_MNN "enable MNN engine" OFF)
 option(ENABLE_NCNN "enable NCNN engine" OFF) 
 option(ENABLE_TNN "enable TNN engine" OFF)
