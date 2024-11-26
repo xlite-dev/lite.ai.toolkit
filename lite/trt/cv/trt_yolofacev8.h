@@ -6,14 +6,26 @@
 #define LITE_AI_TOOLKIT_TRT_YOLOFACEV8_H
 #include "lite/trt/core/trt_core.h"
 #include "lite/trt/core/trt_utils.h"
-
+#include "lite/trt/kernel/nms_cuda_manager.h"
 
 namespace trtcv{
     class LITE_EXPORTS TRTYoloFaceV8 : public BasicTRTHandler{
+
+
     public:
+
+        std::unique_ptr<NMSCudaManager> nms_cuda_manager;
         explicit TRTYoloFaceV8(const std::string& _trt_model_path,unsigned int _num_threads = 1):
                 BasicTRTHandler(_trt_model_path, _num_threads)
-        {};
+        {
+            nms_cuda_manager = std::make_unique<NMSCudaManager>();
+        };
+
+
+
+        std::vector<int> nms_cuda(std::vector<lite::types::Boxf> boxes,
+                                  std::vector<float> confidences,
+                                  const float nms_thresh);
 
     private:
         float mean = -127.5 / 128.0;

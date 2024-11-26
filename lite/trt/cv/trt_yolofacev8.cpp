@@ -20,6 +20,12 @@ float TRTYoloFaceV8::get_iou(const lite::types::Boxf box1, const lite::types::Bo
 }
 
 
+
+std::vector<int>
+TRTYoloFaceV8::nms_cuda(std::vector<lite::types::Boxf> boxes, std::vector<float> confidences, const float nms_thresh) {
+        return nms_cuda_manager->perform_nms(boxes, confidences, nms_thresh);
+}
+
 std::vector<int> TRTYoloFaceV8::nms(std::vector<lite::types::Boxf> boxes, std::vector<float> confidences, const float nms_thresh) {
     sort(confidences.begin(), confidences.end(), [&confidences](size_t index_1, size_t index_2)
     { return confidences[index_1] > confidences[index_2]; });
@@ -119,7 +125,9 @@ void TRTYoloFaceV8::generate_box(float *trt_outputs, std::vector<lite::types::Bo
             score_raw.emplace_back(score);
         }
     }
-    std::vector<int> keep_inds = this->nms(bounding_box_raw, score_raw, iou_threshold);
+    std::vector<int> keep_inds = nms_cuda(bounding_box_raw, score_raw, iou_threshold);
+//    std::vector<int> keep_inds = this->nms(bounding_box_raw, score_raw, iou_threshold);
+
     const int keep_num = keep_inds.size();
     boxes.clear();
     boxes.resize(keep_num);
@@ -134,6 +142,18 @@ void TRTYoloFaceV8::generate_box(float *trt_outputs, std::vector<lite::types::Bo
 
 void TRTYoloFaceV8::detect(const cv::Mat &mat, std::vector<lite::types::Boxf> &boxes, float conf_threshold,
                            float iou_threshold) {
+
+    // 检查输入
+    if (mat.empty()) {
+        std::cerr << "Input image is empty!" << std::endl;
+        return;
+    }
+
+    // 检查 TRT 上下文
+    if (!trt_context) {
+        std::cerr << "TensorRT context is null!" << std::endl;
+        return;
+    }
 
 
     // 1.normalized the input
