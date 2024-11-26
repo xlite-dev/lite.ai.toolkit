@@ -52,7 +52,7 @@ function(add_lite_ai_toolkit_shared_library version soversion)
     if (ENABLE_TENSORRT)
         include(cmake/tensorrt.cmake)
         set(LITE_SRCS ${LITE_SRCS} ${TRT_SRCS})
-        set(LITE_DEPENDENCIES ${LITE_DEPENDENCIES} cudart nvinfer nvonnxparser 
+        set(LITE_DEPENDENCIES ${LITE_DEPENDENCIES} cuda cudart nvinfer nvonnxparser
                                                    nvinfer_plugin ddim_scheduler_cpp)
         link_directories(${CMAKE_SOURCE_DIR}/lite/bin)
     endif ()
