@@ -102,29 +102,30 @@ void TRTYoloFaceV8::generate_box(float *trt_outputs, std::vector<lite::types::Bo
                                  float iou_threshold) {
 
     int num_box = output_node_dims[0][2];
-    std::vector<lite::types::BoundingBoxType<float, float>> bounding_box_raw;
-    std::vector<float> score_raw;
-    for (int i = 0; i < num_box; i++)
-    {
-        const float score = trt_outputs[4 * num_box + i];
-        if (score > conf_threshold)
-        {
-            float x1 = (trt_outputs[i] - 0.5 * trt_outputs[2 * num_box + i]) * ratio_width;
-            float y1 = (trt_outputs[num_box + i] - 0.5 * trt_outputs[3 * num_box + i]) * ratio_height;
-            float x2 = (trt_outputs[i] + 0.5 * trt_outputs[2 * num_box + i]) * ratio_width;
-            float y2 = (trt_outputs[num_box + i] + 0.5 * trt_outputs[3 * num_box + i]) * ratio_height;
 
-            lite::types::BoundingBoxType<float, float> bbox;
-            bbox.x1 = x1;
-            bbox.y1 = y1;
-            bbox.x2 = x2;
-            bbox.y2 = y2;
-            bbox.score = score;
-            bbox.flag = true;
-            bounding_box_raw.emplace_back(bbox);
-            score_raw.emplace_back(score);
+    // 直接分配目标类型的向量
+    std::vector<lite::types::BoundingBoxType<float, float>> bounding_box_raw(num_box);
+
+    // 调用包装函数
+    launch_yolov8_postprocess(
+            trt_outputs,
+            num_box,
+            conf_threshold,
+            ratio_height,
+            ratio_width,
+            bounding_box_raw.data(),
+            num_box
+    );
+
+    std::vector<float> score_raw;
+    for (const auto& bbox : bounding_box_raw) {
+        if (bbox.score >= 0) {
+            score_raw.emplace_back(bbox.score);
         }
     }
+
+
+
     std::vector<int> keep_inds = nms_cuda(bounding_box_raw, score_raw, iou_threshold);
 //    std::vector<int> keep_inds = this->nms(bounding_box_raw, score_raw, iou_threshold);
 
