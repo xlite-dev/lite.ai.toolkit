@@ -108,7 +108,7 @@ void TRTYoloFaceV8::generate_box(float *trt_outputs, std::vector<lite::types::Bo
 
     // 调用包装函数
     launch_yolov8_postprocess(
-            trt_outputs,
+            static_cast<float*>(buffers[1]),
             num_box,
             conf_threshold,
             ratio_height,
