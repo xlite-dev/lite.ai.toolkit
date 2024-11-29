@@ -14,8 +14,7 @@ __global__ void yolov8_postprocess_kernel(
 
     const float score = trt_outputs[4 * number_of_boxes + index];
     if (score > conf_threshold) {
-        // 计算边界框坐标
-//        printf("ratio_width: %f\n", ratio_width);
+
         float x1 = (trt_outputs[index] - 0.5 * trt_outputs[2 * number_of_boxes + index]) * ratio_width;
         float y1 = (trt_outputs[number_of_boxes + index] - 0.5 * trt_outputs[3 * number_of_boxes + index]) * ratio_height;
         float x2 = (trt_outputs[index] + 0.5 * trt_outputs[2 * number_of_boxes + index]) * ratio_width;
@@ -23,7 +22,6 @@ __global__ void yolov8_postprocess_kernel(
 
         // 使用原子操作获取输出索引
         int output_index = atomicAdd(output_count, 1);
-
         // 直接设置BoundingBoxType
         output_boxes[output_index].x1 = x1;
         output_boxes[output_index].y1 = y1;
