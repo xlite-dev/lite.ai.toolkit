@@ -1,6 +1,6 @@
 // trt_face_restoration_mt.h
-#ifndef LITE_AI_TOOLKIT_TRT_FACE_RESTORATION_MT_H
-#define LITE_AI_TOOLKIT_TRT_FACE_RESTORATION_MT_H
+#ifndef LITE_AI_TOOLKIT_TRT_FACE_RESTORATION_MT_H_  // 注意添加_MT后缀
+#define LITE_AI_TOOLKIT_TRT_FACE_RESTORATION_MT_H_
 
 #include "cuda_runtime.h"
 #include "NvInfer.h"
@@ -19,7 +19,7 @@
 
 
 // 定义任务结构体
-struct InferenceTask {
+struct InferenceTaskTest {
     cv::Mat face_swap_image;
     std::vector<cv::Point2f> target_landmarks_5;
     std::string face_enchaner_path;
@@ -44,7 +44,7 @@ private:
 
     // 线程池相关组件
     std::vector<std::thread> worker_threads;
-    std::queue<InferenceTask> task_queue;
+    std::queue<InferenceTaskTest> task_queue;
     std::mutex queue_mutex;
     std::condition_variable condition;
     std::atomic<bool> stop_flag{false};
@@ -58,7 +58,7 @@ private:
     void worker_function(int thread_id);
 
     // 实际的推理函数
-    void process_single_task(const InferenceTask& task, int thread_id);
+    void process_single_task(const InferenceTaskTest& task, int thread_id);
 
 public:
     explicit trt_face_restoration_mt(std::string& model_path, size_t num_threads = 4);
@@ -74,5 +74,4 @@ public:
     // 等待所有任务完成
     void wait_for_completion();
 };
-
-#endif //LITE_AI_TOOLKIT_TRT_FACE_RESTORATION_MT_H
+#endif
