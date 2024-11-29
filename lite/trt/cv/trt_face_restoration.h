@@ -8,7 +8,7 @@
 #include "lite/trt/core/trt_utils.h"
 #include "lite/trt/core/trt_config.h"
 #include "lite/ort/cv/face_utils.h"
-
+#include "lite/trt/kernel/face_restoration_postprocess_manager.h"
 namespace trtcv{
     class LITE_EXPORTS TRTFaceFusionFaceRestoration : BasicTRTHandler{
     public:
