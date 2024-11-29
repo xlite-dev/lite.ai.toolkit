@@ -1,6 +1,8 @@
 // trt_face_restoration_mt.h
-#ifndef LITE_AI_TOOLKIT_TRT_FACE_RESTORATION_MT_H
-#define LITE_AI_TOOLKIT_TRT_FACE_RESTORATION_MT_H
+
+#ifndef LITE_AI_TOOLKIT_TRT_FACE_LANDMARKS_MT_H_  // 使用不同的后缀
+#define LITE_AI_TOOLKIT_TRT_FACE_LANDMARKS_MT_H_
+
 
 #include "cuda_runtime.h"
 #include "NvInfer.h"
