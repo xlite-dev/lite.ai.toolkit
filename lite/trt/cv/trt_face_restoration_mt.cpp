@@ -99,7 +99,7 @@ trt_face_restoration_mt::trt_face_restoration_mt(std::string& model_path, size_t
 // 在cpp文件中修改相关实现
 void trt_face_restoration_mt::worker_function(int thread_id) {
     while (true) {
-        InferenceTask task;
+        InferenceTaskTest task;
         bool has_task = false;
 
         // 从任务队列获取任务
@@ -133,7 +133,7 @@ void trt_face_restoration_mt::worker_function(int thread_id) {
 }
 
 
-void trt_face_restoration_mt::process_single_task(const InferenceTask& task, int thread_id) {
+void trt_face_restoration_mt::process_single_task(const InferenceTaskTest& task, int thread_id) {
     auto ori_image = task.face_swap_image.clone();
 
     // 1. 图像预处理
@@ -245,7 +245,7 @@ void trt_face_restoration_mt::detect_async(
         std::vector<cv::Point2f>& target_landmarks_5,
         const std::string& face_enchaner_path
 ) {
-    InferenceTask task{face_swap_image.clone(), target_landmarks_5, face_enchaner_path};
+    InferenceTaskTest task{face_swap_image.clone(), target_landmarks_5, face_enchaner_path};
 
     {
         std::lock_guard<std::mutex> lock(queue_mutex);
