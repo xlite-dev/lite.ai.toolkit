@@ -27,10 +27,10 @@ set(CMAKE_CUDA_ARCHITECTURES 89) # For RTX 20xx series
 enable_language(CUDA)
 set(LITE_AI_ROOT_DIR ${CMAKE_SOURCE_DIR})
 
-option(ENABLE_TEST "build test examples." ON)
+option(ENABLE_TEST "build test examples." OFF)
 option(ENABLE_DEBUG_STRING "enable DEBUG string or not" ON)
 option(ENABLE_ONNXRUNTIME "enable ONNXRuntime engine" ON)
-option(ENABLE_TENSORRT "enable TensorRT engine" ON)
+option(ENABLE_TENSORRT "enable TensorRT engine" OFF)
 option(ENABLE_MNN "enable MNN engine" OFF)
 option(ENABLE_NCNN "enable NCNN engine" OFF) 
 option(ENABLE_TNN "enable TNN engine" OFF)
