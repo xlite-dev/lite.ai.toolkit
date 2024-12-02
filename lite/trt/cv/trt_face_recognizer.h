@@ -8,6 +8,7 @@
 #include "lite/trt/core/trt_core.h"
 #include "lite/trt/core/trt_utils.h"
 #include "lite/trt/core/trt_types.h"
+#include "lite/trt/kernel/face_recognizer_postprocess_manager.h"
 
 namespace trtcv{
     class  LITE_EXPORTS TRTFaceFusionFaceRecognizer : BasicTRTHandler{

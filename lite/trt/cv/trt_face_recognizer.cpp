@@ -52,15 +52,21 @@ void TRTFaceFusionFaceRecognizer::detect(cv::Mat &input_mat, std::vector<cv::Poi
     std::vector<float> normal_embeding(output.begin(),output.end());
 
 
-    float norm = 0.0f;
-    for (const auto &val : normal_embeding) {
-        norm += val * val;
-    }
-    norm = std::sqrt(norm);
+    launch_face_recognizer_postprocess(
+            static_cast<float*>(buffers[1]),
+            output_node_dims[0][0] * output_node_dims[0][1],
+            output.data()
+            );
+//    float norm = 0.0f;
+//    for (const auto &val : normal_embeding) {
+//        norm += val * val;
+//    }
+//    norm = std::sqrt(norm);
+//
+//    for (auto &val : normal_embeding) {
+//        val /= norm;
+//    }
 
-    for (auto &val : normal_embeding) {
-        val /= norm;
-    }
 
     std::cout<<"done!"<<std::endl;
 
