@@ -52,8 +52,9 @@ void TRTFaceFusionFaceSwap::detect(cv::Mat &target_image, std::vector<float> sou
         std::cerr << "Failed to enqueue TensorRT model." << std::endl;
         return;
     }
+    auto start = std::chrono::high_resolution_clock::now();
 
-    // 将输出拷贝出来
+//     将输出拷贝出来
     std::vector<float> output_vector(3 * 128 * 128);
     cudaMemcpyAsync(output_vector.data(),buffers[2],1 * 3 * 128 * 128 * sizeof(float),cudaMemcpyDeviceToHost,stream);
     cudaStreamSynchronize(stream);
@@ -61,11 +62,23 @@ void TRTFaceFusionFaceSwap::detect(cv::Mat &target_image, std::vector<float> sou
     std::vector<float> output_swap_image(1 * 3 * 128 * 128);
     output_swap_image.assign(output_vector.begin(),output_vector.end());
 
+
+
     std::vector<float> transposed(3 * 128 * 128);
     int channels = 3;
     int height = 128;
     int width = 128;
+//    launch_face_swap_postprocess(
+//            static_cast<float*>(buffers[2]),
+//            channels,
+//            height,
+//            width,
+//            transposed.data()
+//            );
 
+    // 写一个测试时间的代码
+
+#pragma omp parallel for collapse(3)
     for (int c = 0; c < channels; ++c) {
         for (int h = 0; h < height; ++h) {
             for (int w = 0; w < width; ++w) {
@@ -76,15 +89,27 @@ void TRTFaceFusionFaceSwap::detect(cv::Mat &target_image, std::vector<float> sou
         }
     }
 
+//    for (int c = 0; c < channels; ++c) {
+//        for (int h = 0; h < height; ++h) {
+//            for (int w = 0; w < width; ++w) {
+//                int src_idx = c * (height * width) + h * width + w;  // CHW
+//                int dst_idx = h * (width * channels) + w * channels + c;  // HWC
+//                transposed[dst_idx] = output_swap_image[src_idx];
+//            }
+//        }
+//    }
+
     for (auto& val : transposed) {
         val = std::round(val * 255.0);
     }
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = end-start;
+    std::cout << "postprocess Time: " << diff.count() << " s\n";
+
 
     cv::Mat mat(height, width, CV_32FC3, transposed.data());
     cv::cvtColor(mat, mat, cv::COLOR_RGB2BGR);
 
     cv::Mat dst_image = face_utils::paste_back(ori_image,mat,crop_list[0],affine_martix);
     face_swap_image = dst_image;
-
-
 }

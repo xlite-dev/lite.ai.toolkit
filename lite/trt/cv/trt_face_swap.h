@@ -8,6 +8,7 @@
 #include "lite/trt/core/trt_core.h"
 #include "lite/trt/core/trt_utils.h"
 #include "lite/trt/core/trt_types.h"
+#include "lite/trt/kernel/face_swap_postproces_manager.h"
 
 namespace trtcv{
     class LITE_EXPORTS TRTFaceFusionFaceSwap : BasicTRTHandler{
