@@ -18,12 +18,13 @@ void TRTFaceFusionFaceRestoration::detect(cv::Mat &face_swap_image, std::vector<
     std::vector<cv::Mat> crop_mask_list;
     crop_mask_list.emplace_back(box_mask);
 
-    cv::cvtColor(crop_image,crop_image,cv::COLOR_BGR2RGB);
-    crop_image.convertTo(crop_image,CV_32FC3,1.f / 255.f);
-    crop_image.convertTo(crop_image,CV_32FC3,2.0f,-1.f);
+    cv::Mat crop_image_rgb;
+    launch_bgr2rgb(crop_image,crop_image_rgb);
+    crop_image_rgb.convertTo(crop_image_rgb,CV_32FC3,1.f / 255.f);
+    crop_image_rgb.convertTo(crop_image_rgb,CV_32FC3,2.0f,-1.f);
 
     std::vector<float> input_vector;
-    trtcv::utils::transform::create_tensor(crop_image,input_vector,input_node_dims,trtcv::utils::transform::CHW);
+    trtcv::utils::transform::create_tensor(crop_image_rgb,input_vector,input_node_dims,trtcv::utils::transform::CHW);
 
     // 拷贝
 
@@ -69,31 +70,6 @@ void TRTFaceFusionFaceRestoration::detect(cv::Mat &face_swap_image, std::vector<
     int channel = 3;
     int height = 512;
     int width = 512;
-//    std::vector<float> output(channel * height * width);
-//    output.assign(output_vector.begin(),output_vector.end());
-//
-//    std::transform(output.begin(),output.end(),output.begin(),
-//                   [](double x){return std::max(-1.0,std::max(-1.0,std::min(1.0,x)));});
-//
-//    std::transform(output.begin(),output.end(),output.begin(),
-//                   [](double x){return (x + 1.f) /2.f;});
-//
-//    // CHW2HWC
-//    for (int c = 0; c < channel; ++c){
-//        for (int h = 0 ; h < height; ++h){
-//            for (int w = 0; w < width ; ++w){
-//                int src_index = c * (height * width) + h * width + w;
-//                int dst_index = h * (width * channel) + w *  channel + c;
-//                transposed_data[dst_index] = output[src_index];
-//            }
-//        }
-//    }
-//
-//    std::transform(transposed_data.begin(),transposed_data.end(),transposed_data.begin(),
-//                   [](float x){return std::round(x * 255.f);});
-//
-//    std::transform(transposed_data.begin(), transposed_data.end(), transposed_data.begin(),
-//                   [](float x) { return static_cast<uint8_t>(x); });
 
 
     cv::Mat mat(height, width, CV_32FC3, transposed_data_float.data());
