@@ -1,5 +1,5 @@
 //
-// Created by ai-test1 on 24-7-8.
+// Created by wangzijian on 24-7-8.
 //
 
 #include "yolofacev8.h"
@@ -9,6 +9,7 @@
 using ortcv::YoloFaceV8;
 
 float YoloFaceV8::get_iou(const lite::types::Boxf box1, const lite::types::Boxf box2) {
+    // 左上角是坐标轴原点，右下角是坐标轴最大值
     float x1 = std::max(box1.x1, box2.x1);
     float y1 = std::max(box1.y1, box2.y1);
     float x2 = std::min(box1.x2, box2.x2);
