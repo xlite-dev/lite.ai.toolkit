@@ -65,17 +65,18 @@ private:
     // 实际的推理函数
     void process_single_task(InferenceTask& task, int thread_id);
 
-    void preprocess(const lite::types::Boxf &bouding_box,const cv::Mat &input_mat,cv::Mat &crop_img);
+    void preprocess(const lite::types::Boxf &bouding_box,const cv::Mat &input_mat,cv::Mat &crop_img,int thread_id);
 
-    void postprocess(float *trt_outputs, std::vector<cv::Point2f> &face_landmark_5of68);
+    void postprocess(float *trt_outputs, std::vector<cv::Point2f> &face_landmark_5of68,int thread_id);
 
-    std::vector<cv::Point2f> postprocess(float *trt_outputs);
+    std::vector<cv::Point2f> postprocess(float *trt_outputs,int thread_id);
 
 
 
 private:
-    cv::Mat affine_matrix;
-    cv::Mat img_with_landmarks;
+    std::vector<cv::Mat> affine_matrixs;
+    std::vector<cv::Mat> img_with_landmarks_vec;
+
 
 public:
     explicit trt_face_68landmarks_mt(std::string& model_path, size_t num_threads = 4);

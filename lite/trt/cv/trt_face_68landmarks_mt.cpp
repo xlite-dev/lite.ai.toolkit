@@ -99,6 +99,9 @@ trt_face_68landmarks_mt::trt_face_68landmarks_mt(std::string &model_path, size_t
         worker_threads.emplace_back(&trt_face_68landmarks_mt::worker_function, this, i);
     }
 
+    affine_matrixs.resize(num_threads);
+    img_with_landmarks_vec.resize(num_threads);
+
 }
 
 // 在cpp文件中修改相关实现
@@ -138,7 +141,7 @@ void trt_face_68landmarks_mt::worker_function(int thread_id) {
 }
 
 void
-trt_face_68landmarks_mt::preprocess(const lite::types::Boxf &bounding_box, const cv::Mat &input_mat, cv::Mat &crop_img) {
+trt_face_68landmarks_mt::preprocess(const lite::types::Boxf &bounding_box, const cv::Mat &input_mat, cv::Mat &crop_img,int thread_id) {
     float xmin = bounding_box.x1;
     float ymin = bounding_box.y1;
     float xmax = bounding_box.x2;
@@ -159,7 +162,7 @@ trt_face_68landmarks_mt::preprocess(const lite::types::Boxf &bounding_box, const
 
     cv::Size crop_size(256, 256);
 
-    std::tie(crop_img, affine_matrix) = face_utils::warp_face_by_translation(input_mat, translation, scale, crop_size);
+    std::tie(crop_img, affine_matrixs[thread_id]) = face_utils::warp_face_by_translation(input_mat, translation, scale, crop_size);
 
     crop_img.convertTo(crop_img,CV_32FC3,1 / 255.f);
 }
@@ -168,10 +171,10 @@ trt_face_68landmarks_mt::preprocess(const lite::types::Boxf &bounding_box, const
 void trt_face_68landmarks_mt::process_single_task( InferenceTask &task, int thread_id) {
     if (task.input_mat.empty()) return;
 
-    img_with_landmarks = task.input_mat.clone();
+    img_with_landmarks_vec[thread_id] = task.input_mat.clone();
     cv::Mat crop_image;
 
-    preprocess(task.bbox, task.input_mat, crop_image);
+    preprocess(task.bbox, task.input_mat, crop_image, thread_id);
 
     std::vector<float> input_data;
 
@@ -198,13 +201,13 @@ void trt_face_68landmarks_mt::process_single_task( InferenceTask &task, int thre
 
     // 带出结果
     // 指针指向带出来
-    *task.face_landmark_5of68 = postprocess(output.data());
+    *task.face_landmark_5of68 = postprocess(output.data(),thread_id);
 
     task.completion_promise.set_value();
 }
 
 
-std::vector<cv::Point2f> trt_face_68landmarks_mt::postprocess(float *trt_outputs) {
+std::vector<cv::Point2f> trt_face_68landmarks_mt::postprocess(float *trt_outputs,int thread_id) {
     std::vector<cv::Point2f> landmarks;
 
     for (int i = 0;i < 68; ++i)
@@ -215,7 +218,7 @@ std::vector<cv::Point2f> trt_face_68landmarks_mt::postprocess(float *trt_outputs
     }
 
     cv::Mat inverse_affine_matrix;
-    cv::invertAffineTransform(affine_matrix, inverse_affine_matrix);
+    cv::invertAffineTransform(affine_matrixs[thread_id], inverse_affine_matrix);
 
     cv::transform(landmarks, landmarks, inverse_affine_matrix);
 
@@ -223,7 +226,7 @@ std::vector<cv::Point2f> trt_face_68landmarks_mt::postprocess(float *trt_outputs
 }
 
 
-void trt_face_68landmarks_mt::postprocess(float *trt_outputs, std::vector<cv::Point2f> &face_landmark_5of68) {
+void trt_face_68landmarks_mt::postprocess(float *trt_outputs, std::vector<cv::Point2f> &face_landmark_5of68,int thread_id) {
     std::vector<cv::Point2f> landmarks;
 
     for (int i = 0;i < 68; ++i)
@@ -234,7 +237,7 @@ void trt_face_68landmarks_mt::postprocess(float *trt_outputs, std::vector<cv::Po
     }
 
     cv::Mat inverse_affine_matrix;
-    cv::invertAffineTransform(affine_matrix, inverse_affine_matrix);
+    cv::invertAffineTransform(affine_matrixs[thread_id], inverse_affine_matrix);
 
     cv::transform(landmarks, landmarks, inverse_affine_matrix);
 
