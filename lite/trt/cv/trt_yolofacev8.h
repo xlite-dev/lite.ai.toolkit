@@ -8,6 +8,7 @@
 #include "lite/trt/core/trt_utils.h"
 #include "lite/trt/kernel/nms_cuda_manager.h"
 #include "lite/trt/kernel/generate_bbox_cuda_manager.h"
+#include "lite/trt/kernel/bgr2rgb.cuh"
 
 namespace trtcv{
     class LITE_EXPORTS TRTYoloFaceV8 : public BasicTRTHandler{

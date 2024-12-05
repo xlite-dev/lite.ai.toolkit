@@ -230,16 +230,27 @@ void trt_yolofacev8_mt::process_single_task( InferenceTaskFace &task, int thread
         return;
     }
 
+    // 计算preprocess的时间
+    auto start = std::chrono::high_resolution_clock::now();
     cv::Mat normalized_image = normalize(task.input_mat,thread_id);
 
     // 2.trans to input vector
     std::vector<float> input;
     trtcv::utils::transform::create_tensor(normalized_image,input,input_node_dims,trtcv::utils::transform::CHW);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
+    std::cout << "Face Detect preprocess time: " << duration.count() / 1000 << "ms" << std::endl;
 
     // 3. infer
+    // 计算推理时间
+    auto start_infer = std::chrono::high_resolution_clock::now();
     cudaMemcpyAsync(buffers[thread_id][0], input.data(), input_node_dims[0] * input_node_dims[1] * input_node_dims[2] * input_node_dims[3] * sizeof(float),
                     cudaMemcpyHostToDevice, streams[thread_id]);
     bool status = trt_contexts[thread_id]->enqueueV3(streams[thread_id]);
+    cudaStreamSynchronize(streams[thread_id]);
+    auto end_infer = std::chrono::high_resolution_clock::now();
+    auto duration_infer = std::chrono::duration_cast<std::chrono::microseconds>(end_infer-start_infer);
+    std::cout << "Face Detect infer time: " << duration_infer.count() / 1000 << "ms" << std::endl;
 
 
     if (!status){
@@ -252,7 +263,12 @@ void trt_yolofacev8_mt::process_single_task( InferenceTaskFace &task, int thread
     cudaMemcpyAsync(output.data(), buffers[thread_id][1], output_node_dims[0][0] * output_node_dims[0][1] * output_node_dims[0][2] * sizeof(float),
                     cudaMemcpyDeviceToHost, streams[thread_id]);
     // 4. generate box
+    // 计算后处理时间
+    auto start_post = std::chrono::high_resolution_clock::now();
     generate_box(output.data(),*task.bbox,0.45f,0.5f,thread_id);
+    auto end_post = std::chrono::high_resolution_clock::now();
+    auto duration_post = std::chrono::duration_cast<std::chrono::microseconds>(end_post-start_post);
+    std::cout << "Face Detect postprocess time: " << duration_post.count() / 1000 << "ms" << std::endl;
 
 }
 
