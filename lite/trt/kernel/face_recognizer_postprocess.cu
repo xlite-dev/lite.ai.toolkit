@@ -33,7 +33,7 @@ __global__ void computeNormKernel(
     // 利用0号线程写回结果
     if (threadIdx.x == 0) {
         *norm = sqrtf(sharedMem[0]);
-        printf("Thread %d: norm = %f\n", idx,*norm);
+//        printf("Thread %d: norm = %f\n", idx,*norm);
     }
 }
 
