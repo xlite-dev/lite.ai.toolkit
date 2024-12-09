@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 project(lite.ai.toolkit)
 
 set(CMAKE_CXX_STANDARD 17)
-set(VERSION_STRING 0.2.0)
-set(SOVERSION_STRING 0.2.0)
+set(VERSION_STRING 0.3.1)
+set(SOVERSION_STRING 0.3.1)
 include(cmake/utils.cmake)
 
 if (NOT (UNIX AND NOT APPLE))
