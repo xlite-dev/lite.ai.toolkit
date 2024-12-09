@@ -11,6 +11,8 @@
 #include "lite/trt/cv/trt_face_recognizer.h"
 #include "lite/trt/cv/trt_yolofacev8.h"
 #include "lite/trt/cv/trt_face_68landmarks.h"
+#include "lite/trt/cv/trt_face_68landmarks_mt.h"
+#include "lite/trt/cv/trt_yolofacev8_mt.h"
 
 namespace trtcv{
     class TRTFaceFusionPipeLine{
@@ -29,6 +31,8 @@ namespace trtcv{
         std::unique_ptr<TRTFaceFusionFace68Landmarks> face_landmarks;
         std::unique_ptr<TRTFaceFusionFaceRecognizer> face_recognizer;
         std::unique_ptr<TRTFaceFusionFaceSwap> face_swap;
+        std::unique_ptr<trt_yolofacev8_mt> face_detect_mt;
+        std::unique_ptr<trt_face_68landmarks_mt> face_landmarks_mt;
 
     public:
         void detect(const std::string &source_image,const std::string &target_image,const std::string &save_image);
