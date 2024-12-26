@@ -19,7 +19,9 @@ void Face_Swap::preprocess(cv::Mat &target_face, std::vector<float> source_image
     preprocessed_mat.convertTo(preprocessed_mat,CV_32FC3,1.0 / 255.f);
     preprocessed_mat.convertTo(preprocessed_mat,CV_32FC3,1.0 / 1.f,0);
 
-    std::vector<float> model_martix = face_utils::load_npy("/home/facefusion-onnxrun/python/model_matrix.npy");
+    // 使用 CMake 传递的 SOURCE_PATH 宏
+    std::string model_matrix_path = std::string(SOURCE_PATH) + "/examples/lite/resources/model_matrix.npy";
+    std::vector<float> model_martix = face_utils::load_npy(model_matrix_path);
 
     processed_source_embeding= face_utils::dot_product(source_image_embeding,model_martix,512);
 
