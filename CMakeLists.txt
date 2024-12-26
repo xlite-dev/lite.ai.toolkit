@@ -26,6 +26,8 @@ set(CMAKE_CUDA_ARCHITECTURES 89) # For RTX 20xx series
 # 启用 CUDA
 enable_language(CUDA)
 set(LITE_AI_ROOT_DIR ${CMAKE_SOURCE_DIR})
+# 将 CMAKE_SOURCE_DIR 传递给代码
+add_definitions(-DSOURCE_PATH="${CMAKE_SOURCE_DIR}")
 
 option(ENABLE_TEST "build test examples." OFF)
 option(ENABLE_DEBUG_STRING "enable DEBUG string or not" ON)
