@@ -114,6 +114,7 @@
 #include "lite/ort/cv/face_parsing_bisenet_dyn.h"
 #include "lite/ort/cv/yolofacev8.h"
 #include "lite/ort/cv/light_enhance.h"
+#include "lite/ort/cv/docunwarp.h"
 #include "lite/ort/cv/real_esr_gan.h"
 #include "lite/ort/cv/face_68landmarks.h"
 #include "lite/ort/cv/face_recognizer.h"
@@ -511,6 +512,7 @@ namespace lite
       typedef ortcv::FaceParsingBiSeNetDyn _ONNXFaceParsingBiSeNetDyn;
       typedef ortcv::YoloFaceV8 _ONNXYOLOFaceNet;
       typedef ortcv::LightEnhance _ONNXLightEnhance;
+      typedef ortcv::DocUnWarp _ONNXDocUnWarp;
       typedef ortcv::RealESRGAN _ONNXRealESRGAN;
       typedef ortcv::Face_68Landmarks _ONNXFace_68Landmarks;
       typedef ortcv::Face_Recognizer _ONNXFace_Recognizer;
@@ -679,7 +681,7 @@ namespace lite
       // 7. ocr
       namespace ocr
       {
-
+          typedef _ONNXDocUnWarp DocUnWarp;
       }
       // 8. neural rendering
       namespace render
