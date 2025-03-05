@@ -6,9 +6,9 @@
 
 static void test_default()
 {
-    std::string onnx_path = "../../../examples/hub/onnx/cv/age_googlenet.onnx";
-    std::string test_img_path = "../../../examples/lite/resources/test_lite_age_googlenet.jpg";
-    std::string save_img_path = "../../../examples/logs/test_lite_age_googlenet.jpg";
+    std::string onnx_path = "../../../examples/hub/onnx/cv/unetcnn.onnx";
+    std::string test_img_path = "../../../examples/lite/resources/test_lite_docunwarp.jpg";
+    std::string save_img_path = "../../../examples/logs/test_lite_age_docunwarp.jpg";
 
     // 1. Test Default Engine ONNXRuntime
     lite::cv::ocr::DocUnWarp *docUnWarp = new lite::cv::ocr::DocUnWarp(onnx_path);
