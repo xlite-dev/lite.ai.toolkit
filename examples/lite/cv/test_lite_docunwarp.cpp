@@ -6,9 +6,9 @@
 
 static void test_default()
 {
-    std::string onnx_path = "/home/lite.ai.toolkit/unetcnn.onnx";
-    std::string test_img_path = "/home/lite.ai.toolkit/demo1.jpg";
-    std::string save_img_path = "/home/lite.ai.toolkit/doc_unwarp.jpg";
+    std::string onnx_path = "../../../examples/hub/onnx/cv/age_googlenet.onnx";
+    std::string test_img_path = "../../../examples/lite/resources/test_lite_age_googlenet.jpg";
+    std::string save_img_path = "../../../examples/logs/test_lite_age_googlenet.jpg";
 
     // 1. Test Default Engine ONNXRuntime
     lite::cv::ocr::DocUnWarp *docUnWarp = new lite::cv::ocr::DocUnWarp(onnx_path);
@@ -26,8 +26,6 @@ static void test_default()
 
 int main(__unused int argc, __unused char *argv[])
 {
-//    test_default();
-//    test_tensorrt();
     test_default();
     return 0;
 }
