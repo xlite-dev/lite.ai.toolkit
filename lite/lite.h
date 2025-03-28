@@ -8,5 +8,6 @@
 #include "types.h"
 #include "utils.h"
 #include "models.h"
+#include "config.h"
 
 #endif //LITE_AI_LITE_H
