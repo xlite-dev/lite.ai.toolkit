@@ -8,6 +8,7 @@
 #include "lite/trt/sd/trt_vae.h"
 #include "lite/trt/sd/trt_clip.h"
 #include "lite/trt/sd/trt_unet.h"
+#include "lite/trt/sd/trt_vae_encoder.h"
 
 namespace trtsd {
 
@@ -27,9 +28,12 @@ namespace trtsd {
         std::unique_ptr<TRTUNet> unet = nullptr;
         std::unique_ptr<TRTClip> clip = nullptr;
         std::unique_ptr<TRTVae> vae = nullptr;
+        std::unique_ptr<TRTVaeEncoder> vaeencoder = nullptr;
 
     public:
         void inference(std::string prompt, std::string negative_prompt, std::string image_save_path, std::string scheduler_config_path,bool is_low_vram = true);
+
+        void inference(std::string prompt, std::string init_image_path,std::string negative_prompt, std::string image_save_path, std::string scheduler_config_path,bool is_low_vram = true);
     };
 
 }
