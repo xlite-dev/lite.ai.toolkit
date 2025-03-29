@@ -44,15 +44,13 @@ namespace trtsd{
     private:
         std::vector<float> convertToFloat(const std::vector<half>& half_vec);
 
+        void get_timesteps(const std::vector<int>& time_steps,std::vector<int> &new_time_step,int& num_inference_steps,float strength);
 
     public:
-        void inference();
 
         void inference(const std::vector<std::vector<float>> &clip_output,std::vector<float> &latent,std::string scheduler_config_path);
 
-
-
-
+        void inference(const std::vector<std::vector<float>> &clip_output,const std::vector<float>& latent_input,std::vector<float> &latent_output,std::string scheduler_config_path);
     };
 }
 
