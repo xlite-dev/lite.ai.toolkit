@@ -35,7 +35,7 @@ namespace trtcv{
         std::unique_ptr<trt_face_68landmarks_mt> face_landmarks_mt;
 
     public:
-        void detect(const std::string &source_image,const std::string &target_image,const std::string &save_image);
+        void detect(const std::string &source_image,int src_index,const std::string &target_image,int target_index,const std::string &save_image);
 
     };
 }
