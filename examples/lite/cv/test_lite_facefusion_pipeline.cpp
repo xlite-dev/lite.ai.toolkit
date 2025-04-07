@@ -64,7 +64,7 @@ static void test_tensorrt()
     // 写一个测试时间的代码
     auto start = std::chrono::high_resolution_clock::now();
 
-    pipeLine.detect(source_image_path,target_image_path,save_image_path);
+    pipeLine.detect(source_image_path,0,target_image_path,0,save_image_path);
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> diff = end-start;
     std::cout << "Time: " << diff.count()  * 1000<< " ms\n";
