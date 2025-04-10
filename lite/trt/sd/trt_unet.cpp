@@ -105,7 +105,7 @@ void TRTUNet::inference(const std::vector<std::vector<float>> &clip_output, std:
     std::transform(combined_embedding.begin(), combined_embedding.end(), combined_embedding_fp16.begin(),[](float f) { return __float2half(f);});
 
 
-    std::vector<half> latents_fp16(latents.size(),0);
+    std::vector<half> latents_fp16(latents.size(), __float2half(0));
     std::transform(latents.begin(), latents.end(), latents_fp16.begin(),[](float f) { return __float2half(f);});
 
 
@@ -191,7 +191,7 @@ void TRTUNet::inference(const std::vector<std::vector<float>> &clip_output, std:
         scheduler.step(noise_pred,noise_pred_dims, latents_fp32, noise_pred_dims,
                        pred_sample, t);
 
-        std::vector<half> pred_sample_fp16(pred_sample.size(),0);
+        std::vector<half> pred_sample_fp16(pred_sample.size(), __float2half(0));
         std::transform(pred_sample.begin(), pred_sample.end(),
                        pred_sample_fp16.begin(),[](float f) { return __float2half(f);});
 
@@ -283,7 +283,7 @@ void TRTUNet::inference(const std::vector<std::vector<float>> &clip_output, cons
     std::transform(combined_embedding.begin(), combined_embedding.end(), combined_embedding_fp16.begin(),[](float f) { return __float2half(f);});
 
 
-    std::vector<half> latents_fp16( 2 * latents.size(),0);
+    std::vector<half> latents_fp16( 2 * latents.size(), __float2half(0));
 
 //    auto latents_0 = load_binary_file("/home/lite.ai.toolkit/tensor_data.bin");
 //    latents.insert(latents_0.end(), latents_0.begin(), latents_0.end());
@@ -378,7 +378,7 @@ void TRTUNet::inference(const std::vector<std::vector<float>> &clip_output, cons
         scheduler.step(noise_pred,noise_pred_dims, latents_fp32, noise_pred_dims,
                        pred_sample, t);
 
-        std::vector<half> pred_sample_fp16(pred_sample.size(),0);
+        std::vector<half> pred_sample_fp16(pred_sample.size(), __float2half(0));
         std::transform(pred_sample.begin(), pred_sample.end(),
                        pred_sample_fp16.begin(),[](float f) { return __float2half(f);});
 

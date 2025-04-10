@@ -46,7 +46,7 @@ TRTVaeEncoder::~TRTVaeEncoder()  {
 }
 
 void TRTVaeEncoder::inference(const std::vector<float> &input_images, std::vector<float> &output_latents) {
-    std::vector<half > vae_encoder_input(input_images.size(),0);
+    std::vector<half > vae_encoder_input(input_images.size(), __float2half(0));
     std::transform(input_images.begin(),input_images.end(),vae_encoder_input.begin(),
                    [](float x){return __float2half(x);});
 
