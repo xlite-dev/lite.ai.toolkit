@@ -3,7 +3,7 @@ set(OnnxRuntime_DIR ${THIRD_PARTY_PATH}/onnxruntime)
 # download from github if OnnxRuntime library is not exists
 if (NOT EXISTS ${OnnxRuntime_DIR})
     set(OnnxRuntime_Filename "onnxruntime-linux-x64-${OnnxRuntime_Version}.tgz")
-    set(OnnxRuntime_URL https://github.com/microsoft/onnxruntime/releases/download/v1.17.1/${OnnxRuntime_Filename})
+    set(OnnxRuntime_URL https://ghfast.top/https://github.com/microsoft/onnxruntime/releases/download/v1.17.1/${OnnxRuntime_Filename})
     message("[Lite.AI.Toolkit][I] Downloading onnxruntime library: ${OnnxRuntime_URL}")
     download_and_decompress(${OnnxRuntime_URL} ${OnnxRuntime_Filename} ${OnnxRuntime_DIR}) 
 else() 
