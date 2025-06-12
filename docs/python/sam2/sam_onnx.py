@@ -426,14 +426,14 @@ if __name__ == "__main__":
     sam2 = Sam2()
     
     # Load model
-    encoder_path = "/home/ps/wangzijian/sam2.1_large_preprocess.onnx"
-    decoder_path = "/home/ps/wangzijian/sam2.1_large.onnx"
+    encoder_path = "sam2.1_large_preprocess.onnx"
+    decoder_path = "sam2.1_large.onnx"
     
     if sam2.load_model(encoder_path, decoder_path, device="cpu"):
         print("SAM2 model loaded successfully")
         
         # Load original image
-        original_image = cv2.imread("/home/ps/wangzijian/david-tomaseti-Vw2HZQ1FGjU-unsplash.jpg")
+        original_image = cv2.imread("david-tomaseti-Vw2HZQ1FGjU-unsplash.jpg")
         if original_image is not None:
             print(f"Original image size: {original_image.shape}")
             
@@ -459,7 +459,7 @@ if __name__ == "__main__":
                 if mask is not None and mask.size > 0:
                     print(f"Output mask size: {mask.shape}")
                     print(f"Original image size: {original_image.shape[:2]}")
-                    cv2.imwrite("/home/ps/wangzijian/output_mask_fixed.png", mask)
+                    cv2.imwrite("output_mask_fixed.png", mask)
                     print("Mask saved to output_mask_fixed.png")
                     
                     # Optional: Create overlay visualization
@@ -467,7 +467,7 @@ if __name__ == "__main__":
                     mask_colored = np.zeros_like(original_image)
                     mask_colored[mask > 0] = [0, 255, 0]  # Green mask
                     overlay = cv2.addWeighted(overlay, 0.7, mask_colored, 0.3, 0)
-                    cv2.imwrite("/home/ps/wangzijian/overlay_result_fixed.png", overlay)
+                    cv2.imwrite("overlay_result_fixed.png", overlay)
                     print("Overlay saved to overlay_result_fixed.png")
             else:
                 print("Failed to preprocess image")

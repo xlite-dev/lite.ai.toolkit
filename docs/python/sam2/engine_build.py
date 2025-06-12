@@ -12,7 +12,7 @@ def build_flexible_sam2_engine():
         
         # 解析 ONNX
         print("Loading ONNX model...")
-        with open("/home/ps/wangzijian/sam2.1_large.onnx", 'rb') as model:
+        with open("sam2.1_large.onnx", 'rb') as model:
             if not parser.parse(model.read()):
                 print("Failed to parse ONNX model")
                 for error in range(parser.num_errors):
@@ -68,7 +68,7 @@ def build_flexible_sam2_engine():
             return False
         
         # 保存引擎
-        engine_path = "/home/ps/wangzijian/sam2.1_large_1024x1797_python.engine"
+        engine_path = "sam2.1_large_1024x1797_python.engine"
         with open(engine_path, 'wb') as f:
             f.write(serialized_engine)
         

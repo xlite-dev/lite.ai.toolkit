@@ -584,14 +584,14 @@ if __name__ == "__main__":
     sam2 = Sam2TRT()
     
     # Load model
-    encoder_path = "/home/ps/wangzijian/sam2.1_large_preprocess.engine"  # TensorRT engine file
-    decoder_path = "/home/ps/wangzijian/sam2.1_large_1024x1797_python.engine"  # TensorRT engine file
+    encoder_path = "sam2.1_large_preprocess.engine"  # TensorRT engine file
+    decoder_path = "sam2.1_large_1024x1797_python.engine"  # TensorRT engine file
     
     if sam2.load_model(encoder_path, decoder_path):
         print("SAM2 TensorRT model loaded successfully")
         
         # Load original image
-        original_image = cv2.imread("/home/ps/wangzijian/Tesla.jpg")
+        original_image = cv2.imread("Tesla.jpg")
         if original_image is not None:
             print(f"Original image size: {original_image.shape}")
             
@@ -618,7 +618,7 @@ if __name__ == "__main__":
                 if mask is not None and mask.size > 0:
                     print(f"Output mask size: {mask.shape}")
                     print(f"Original image size: {original_image.shape[:2]}")
-                    cv2.imwrite("/home/ps/wangzijian/output_mask_trt.png", mask)
+                    cv2.imwrite("output_mask_trt.png", mask)
                     print("Mask saved to output_mask_trt.png")
                     
                     # Optional: Create overlay visualization
@@ -626,7 +626,7 @@ if __name__ == "__main__":
                     mask_colored = np.zeros_like(original_image)
                     mask_colored[mask > 0] = [0, 255, 0]  # Green mask
                     overlay = cv2.addWeighted(overlay, 0.7, mask_colored, 0.3, 0)
-                    cv2.imwrite("/home/ps/wangzijian/overlay_result_trt.png", overlay)
+                    cv2.imwrite("overlay_result_trt.png", overlay)
                     print("Overlay saved to overlay_result_trt.png")
                     
                     # Benchmark test
