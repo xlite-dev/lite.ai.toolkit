@@ -135,6 +135,7 @@
 #include "lite/trt/core/trt_core.h"
 #include "lite/trt/cv/trt_yolofacev8.h"
 #include "lite/trt/cv/trt_yolov5.h"
+#include "lite/trt/cv/trt_yolov11.h"
 #include "lite/trt/cv/trt_yolox.h"
 #include "lite/trt/cv/trt_yolov8.h"
 #include "lite/trt/cv/trt_yolov6.h"
@@ -764,6 +765,7 @@ namespace lite{
             typedef trtcv::TRTYoloFaceV8 _TRT_YOLOFaceNet;
             typedef trtcv::TRTYoloV5 _TRT_YOLOv5;
             typedef trtcv::TRTYoloV8 _TRT_YOLOv8;
+            typedef trtcv::TRTYOLOV11 _TRT_YOLOV11;
             typedef trtcv::TRTYoloX _TRT_YoloX;
             typedef trtcv::TRTYoloV6 _TRT_YOLOv6;
             typedef trtcv::TRTYOLO5Face _TRT_YOLO5Face;
@@ -789,6 +791,7 @@ namespace lite{
                 typedef _TRT_YOLOv8 YOLOV8;
                 typedef _TRT_YoloX YoloX;
                 typedef _TRT_YOLOv6 YOLOV6;
+                typedef _TRT_YOLOV11 YOLOV11;
             }
             namespace face
             {
