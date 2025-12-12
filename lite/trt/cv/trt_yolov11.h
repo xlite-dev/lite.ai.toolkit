@@ -38,7 +38,6 @@ namespace trtcv {
         static constexpr const unsigned int max_nms = 30000;
 
     private:
-        // 新增：LetterBox 实现保持比例缩放
         void letterbox(const cv::Mat &image, cv::Mat &out_image,
                        const cv::Size &new_shape,
                        int stride, const cv::Scalar &color,
@@ -46,7 +45,6 @@ namespace trtcv {
 
         void preprocess(cv::Mat &input_image);
 
-        // 修改：传入 scale 和 padding 参数用于坐标还原
         void generate_bboxes(std::vector<types::Boxf> &bbox_collection,
                              float *output,
                              float score_threshold,
