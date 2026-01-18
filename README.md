@@ -35,10 +35,10 @@
 ## 📖 News 🔥🔥
 <div id="news"></div>
 
-- [2025-08-18]: **[🤗cache-dit](https://github.com/vipshop/cache-dit)** is released! 🤗A PyTorch-native Inference Engine with Hybrid Cache Acceleration and Parallelism for DiTs. Feel free to take a try!
+- [2026-01-16]: **[🤗Cache-DiT v1.2.0 Major Release](https://github.com/vipshop/cache-dit)** is readly! 🤗Cache-DiT is A PyTorch-native Inference Engine with Hybrid Cache Acceleration and Parallelism for DiTs. Feel free to take a try!
 
 <div align='center'>
-  <img src=https://github.com/vipshop/cache-dit/raw/main/assets/cache-dit-v1.png height="320px">
+  <img src=https://github.com/vipshop/cache-dit/raw/main/assets/cache-dit-logo-v2.png height=380px>
 </div>
 
 - Most of my time now is focused on **LLM/VLM** Inference. Please check 📖[Awesome-LLM-Inference](https://github.com/xlite-dev/Awesome-LLM-Inference)  ![](https://img.shields.io/github/stars/xlite-dev/Awesome-LLM-Inference.svg?style=social) and 📖[LeetCUDA](https://github.com/xlite-dev/LeetCUDA)  ![](https://img.shields.io/github/stars/xlite-dev/LeetCUDA.svg?style=social) for more details. Now, [lite.ai.toolkit](https://github.com/xlite-dev/lite.ai.toolkit) ![](https://img.shields.io/github/stars/xlite-dev/lite.ai.toolkit.svg?style=social) is mainly maintained by 🎉[@wangzijian1010](https://github.com/wangzijian1010).
