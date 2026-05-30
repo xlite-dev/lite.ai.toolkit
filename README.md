@@ -104,21 +104,18 @@ auto *yolov5 = new lite::trt::cv::detection::YOLOV5(engine_path);
 ## ⚡ Benchmark 🔥
 <div id="benchmark"></div>
 
-We are driving the **TensorRT path toward extreme GPU inference** with a repeatable playbook: profile every stage with a built-in, backend-agnostic harness ([`lite/bench/profiler.h`](https://github.com/xlite-dev/lite.ai.toolkit/blob/main/lite/bench/profiler.h)), find where the time actually goes, then move the pre/post-processing that traditionally runs on the CPU (affine warp, color convert, normalize, tensor layout, paste-back, NMS …) into **fused CUDA kernels** with reused device buffers and pinned + async copies. The goal: every stage spends its time on real inference, not host glue or `cudaMalloc`/sync round-trips. All numbers below are reproducible via the `lite_*_bench` binaries (10 warmup + 50 iterations, median p50, compute-only).
+GPU-inference optimization log. For each algorithm we profile it with a built-in, backend-agnostic harness ([`lite/bench/profiler.h`](https://github.com/xlite-dev/lite.ai.toolkit/blob/main/lite/bench/profiler.h)), then move the CPU pre/post-processing (affine warp, color convert, normalize, tensor layout, paste-back, NMS …) into **fused CUDA kernels** with reused device buffers and pinned + async copies, so the algorithm spends its time on real inference instead of host glue and `cudaMalloc`/sync round-trips. All numbers are **RTX 4090 · TensorRT 10.1 · CUDA 12.4**, median (p50), compute-only, reproducible via the `lite_*_bench` binaries.
 
-### FaceFusion pipeline — GPU optimization status
-The flagship target is the full face-swap pipeline. Each stage is profiled and moved fully onto the GPU, one at a time. *RTX 4090 · TensorRT 10.1 · CUDA 12.4.*
+| Algorithm | Before | After | Speedup | What changed |
+|:--|:--:|:--:|:--:|:--|
+| **FaceFusion · face restoration (GFPGAN 1.4)** | 78.2 ms<br>(12.8 FPS) | **17.7 ms<br>(56.6 FPS)** | **4.4×** | inverse-mapping paste-back kernel (replaces 2× CPU `warpAffine` + per-frame `cudaMalloc`); cached static mask; fused `bgr2rgb+normalize+CHW` straight into the input buffer |
+| FaceFusion · face detect (YOLOv8-face) | 🚧 | 🚧 | — | bbox decode + NMS → CUDA |
+| FaceFusion · 68 landmarks (2DFAN4) | 🚧 | 🚧 | — | warp + preprocess → CUDA |
+| FaceFusion · face swap (InSwapper) | 🚧 | 🚧 | — | warp + paste → CUDA |
+| FP16 / mixed-precision | 🚧 | 🚧 | — | layer-pinned style convs (keep sensitive layers FP32) |
 
-| Stage (model) | GPU-fused pre/post | Result |
-|:--|:--:|:--|
-| Face detect · YOLOv8-face | 🚧 | — |
-| 68 landmarks · 2DFAN4 | 🚧 | — |
-| Face recognize · ArcFace | 🚧 | — |
-| Face swap · InSwapper | 🚧 | — |
-| **Face restoration · GFPGAN 1.4** | ✅ | **78.2 → 17.7 ms · 12.8 → 56.6 FPS (4.4×)** |
-| FP16 / mixed-precision (all stages) | 🚧 | — |
-
-### Deep dive: GFPGAN face restoration (512×512, FP32)
+<details>
+<summary><b>FaceFusion · face restoration — per-stage breakdown</b></summary>
 
 | Stage | Baseline (ms) | Optimized (ms) | Speedup |
 |:--|:--:|:--:|:--:|
@@ -127,12 +124,10 @@ The flagship target is the full face-swap pipeline. Each stage is profiled and m
 | postprocess (incl. paste-back) | 52.02 | 5.32 | **9.8×** |
 | &nbsp;&nbsp;└ paste-back | 39.07 | 2.34 | **16.7×** |
 | **End-to-end** | **78.17** | **17.66** | **4.4×** |
-| **Throughput** | **12.8 FPS** | **56.6 FPS** | **4.4×** |
 
-- **paste-back** — replaced two full-frame CPU `cv::warpAffine` plus per-call `cudaMalloc`/synchronous copies with a single inverse-mapping CUDA kernel (reused buffers, pinned + async). Numerically equivalent to the CPU path (max |diff| = 2/255).
-- **preprocess** — the static box mask was rebuilt every frame (a large-kernel Gaussian blur), although it only depends on the crop size → now built once and cached. `bgr2rgb + normalize + HWC→CHW` are fused into one kernel that writes straight into the inference input buffer, removing the CPU tensor build and a host→device copy.
+paste-back is numerically equivalent to the CPU path (max |diff| = 2/255). The static box mask used to be rebuilt every frame (a large-kernel Gaussian blur) although it only depends on the crop size. With pre/post off the critical path, inference is now ~60% of the stage — FP16 is the next lever.
 
-With pre/post-processing off the critical path, inference is now ~60% of the stage — so FP16 / mixed-precision is the next lever across the whole pipeline.
+</details>
 
 ## Quick Setup 👀
 
