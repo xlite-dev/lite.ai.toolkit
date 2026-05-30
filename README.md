@@ -101,6 +101,28 @@ Run `bash ./build.sh tensorrt` to build lite.ai.toolkit with TensorRT support, a
 auto *yolov5 = new lite::trt::cv::detection::YOLOV5(engine_path);
 ```
 
+## ⚡ Benchmark 🔥
+<div id="benchmark"></div>
+
+End-to-end GPU optimization of the **FaceFusion face-restoration** stage (GFPGAN 1.4) on **TensorRT**. The idea is simple: keep the whole stage on the GPU. Pre/post-processing that used to run on the CPU (affine warp glue, `bgr2rgb`, normalize, HWC→CHW, paste-back) is rewritten as fused CUDA kernels with reused device buffers and pinned + async copies, so the stage spends its time on real inference instead of host glue and `cudaMalloc`/sync round-trips.
+
+> **Setup**: RTX 4090 · TensorRT 10.1 · CUDA 12.4 · GFPGAN 1.4 (512×512, FP32) · compute-only (no disk I/O) · 10 warmup + 50 iterations, median (p50). Reproduce with [`lite_face_restoration_bench`](https://github.com/xlite-dev/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_face_restoration_bench.cpp).
+
+| Stage | Baseline (ms) | Optimized (ms) | Speedup |
+|:--|:--:|:--:|:--:|
+| preprocess (warp + bgr2rgb + normalize + tensor) | 14.49 | 1.25 | **11.6×** |
+| inference (TensorRT) | 11.30 | 10.79 | 1.05× |
+| postprocess (incl. paste-back) | 52.02 | 5.32 | **9.8×** |
+| &nbsp;&nbsp;└ paste-back | 39.07 | 2.34 | **16.7×** |
+| **End-to-end** | **78.17** | **17.66** | **4.4×** |
+| **Throughput** | **12.8 FPS** | **56.6 FPS** | **4.4×** |
+
+**What changed**
+- **paste-back** — replaced two full-frame CPU `cv::warpAffine` plus per-call `cudaMalloc`/synchronous copies with a single inverse-mapping CUDA kernel (reused buffers, pinned + async). Numerically equivalent to the CPU path (max |diff| = 2/255).
+- **preprocess** — the static box mask was rebuilt every frame (a large-kernel Gaussian blur); it only depends on the crop size, so it is now built once and cached. `bgr2rgb + normalize + HWC→CHW` are fused into one kernel that writes straight into the inference input buffer, removing the CPU tensor build and a host→device copy.
+
+After this, inference itself is ~60% of the stage — FP16 / mixed-precision is the next lever (WIP).
+
 ## Quick Setup 👀
 
 To quickly setup `lite.ai.toolkit`, you can follow the `CMakeLists.txt` listed as belows. 👇👀
