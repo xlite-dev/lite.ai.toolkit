@@ -104,9 +104,21 @@ auto *yolov5 = new lite::trt::cv::detection::YOLOV5(engine_path);
 ## ⚡ Benchmark 🔥
 <div id="benchmark"></div>
 
-End-to-end GPU optimization of the **FaceFusion face-restoration** stage (GFPGAN 1.4) on **TensorRT**. The idea is simple: keep the whole stage on the GPU. Pre/post-processing that used to run on the CPU (affine warp glue, `bgr2rgb`, normalize, HWC→CHW, paste-back) is rewritten as fused CUDA kernels with reused device buffers and pinned + async copies, so the stage spends its time on real inference instead of host glue and `cudaMalloc`/sync round-trips.
+We are driving the **TensorRT path toward extreme GPU inference** with a repeatable playbook: profile every stage with a built-in, backend-agnostic harness ([`lite/bench/profiler.h`](https://github.com/xlite-dev/lite.ai.toolkit/blob/main/lite/bench/profiler.h)), find where the time actually goes, then move the pre/post-processing that traditionally runs on the CPU (affine warp, color convert, normalize, tensor layout, paste-back, NMS …) into **fused CUDA kernels** with reused device buffers and pinned + async copies. The goal: every stage spends its time on real inference, not host glue or `cudaMalloc`/sync round-trips. All numbers below are reproducible via the `lite_*_bench` binaries (10 warmup + 50 iterations, median p50, compute-only).
 
-> **Setup**: RTX 4090 · TensorRT 10.1 · CUDA 12.4 · GFPGAN 1.4 (512×512, FP32) · compute-only (no disk I/O) · 10 warmup + 50 iterations, median (p50). Reproduce with [`lite_face_restoration_bench`](https://github.com/xlite-dev/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_face_restoration_bench.cpp).
+### FaceFusion pipeline — GPU optimization status
+The flagship target is the full face-swap pipeline. Each stage is profiled and moved fully onto the GPU, one at a time. *RTX 4090 · TensorRT 10.1 · CUDA 12.4.*
+
+| Stage (model) | GPU-fused pre/post | Result |
+|:--|:--:|:--|
+| Face detect · YOLOv8-face | 🚧 | — |
+| 68 landmarks · 2DFAN4 | 🚧 | — |
+| Face recognize · ArcFace | 🚧 | — |
+| Face swap · InSwapper | 🚧 | — |
+| **Face restoration · GFPGAN 1.4** | ✅ | **78.2 → 17.7 ms · 12.8 → 56.6 FPS (4.4×)** |
+| FP16 / mixed-precision (all stages) | 🚧 | — |
+
+### Deep dive: GFPGAN face restoration (512×512, FP32)
 
 | Stage | Baseline (ms) | Optimized (ms) | Speedup |
 |:--|:--:|:--:|:--:|
@@ -117,11 +129,10 @@ End-to-end GPU optimization of the **FaceFusion face-restoration** stage (GFPGAN
 | **End-to-end** | **78.17** | **17.66** | **4.4×** |
 | **Throughput** | **12.8 FPS** | **56.6 FPS** | **4.4×** |
 
-**What changed**
 - **paste-back** — replaced two full-frame CPU `cv::warpAffine` plus per-call `cudaMalloc`/synchronous copies with a single inverse-mapping CUDA kernel (reused buffers, pinned + async). Numerically equivalent to the CPU path (max |diff| = 2/255).
-- **preprocess** — the static box mask was rebuilt every frame (a large-kernel Gaussian blur); it only depends on the crop size, so it is now built once and cached. `bgr2rgb + normalize + HWC→CHW` are fused into one kernel that writes straight into the inference input buffer, removing the CPU tensor build and a host→device copy.
+- **preprocess** — the static box mask was rebuilt every frame (a large-kernel Gaussian blur), although it only depends on the crop size → now built once and cached. `bgr2rgb + normalize + HWC→CHW` are fused into one kernel that writes straight into the inference input buffer, removing the CPU tensor build and a host→device copy.
 
-After this, inference itself is ~60% of the stage — FP16 / mixed-precision is the next lever (WIP).
+With pre/post-processing off the critical path, inference is now ~60% of the stage — so FP16 / mixed-precision is the next lever across the whole pipeline.
 
 ## Quick Setup 👀
 
