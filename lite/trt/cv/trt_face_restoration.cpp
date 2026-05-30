@@ -17,32 +17,35 @@ cv::Mat TRTFaceFusionFaceRestoration::restore(cv::Mat &face_swap_image,
     cv::Mat crop_image;
     cv::Mat affine_matrix;
     cv::Mat box_mask;
-    std::vector<float> input_vector;
 
     // ---------------- preprocess (CPU): warp + bgr2rgb + normalize + build tensor ----------------
     {
         LITE_CPU_SCOPE_OPT(prof, "preprocess");
-        std::tie(crop_image, affine_matrix) = face_utils::warp_face_by_face_landmark_5(
-                face_swap_image, target_landmarks_5, face_utils::FFHQ_512);
+        {
+            LITE_CPU_SCOPE_OPT(prof, "  warp");
+            std::tie(crop_image, affine_matrix) = face_utils::warp_face_by_face_landmark_5(
+                    face_swap_image, target_landmarks_5, face_utils::FFHQ_512);
+        }
+        {
+            // the static box mask only depends on the (fixed) 512 crop size, so build it
+            // once and reuse — it used to be rebuilt every frame (a large-kernel GaussianBlur, ~10ms)
+            LITE_CPU_SCOPE_OPT(prof, "  mask");
+            if (box_mask_cache_.empty())
+                box_mask_cache_ = face_utils::create_static_box_mask({512, 512});
+            box_mask = box_mask_cache_;
+        }
 
-        std::vector<float> crop_size = {512, 512};
-        box_mask = face_utils::create_static_box_mask(crop_size);
-
-        cv::Mat crop_image_rgb;
-        launch_bgr2rgb(crop_image, crop_image_rgb);
-        crop_image_rgb.convertTo(crop_image_rgb, CV_32FC3, 1.f / 255.f);
-        crop_image_rgb.convertTo(crop_image_rgb, CV_32FC3, 2.0f, -1.f);
-
-        trtcv::utils::transform::create_tensor(crop_image_rgb, input_vector, input_node_dims,
-                                               trtcv::utils::transform::CHW);
+        {
+            // GPU fused: bgr2rgb + normalize + HWC->CHW written straight into the inference
+            // input buffer (buffers[0]) — also removes the separate H2D below.
+            LITE_CPU_SCOPE_OPT(prof, "  to_chw(gpu)");
+            preprocess_gpu_.run(crop_image, static_cast<float *>(buffers[0]), stream);
+        }
     }
 
-    // ---------------- inference (H2D + GPU + sync) ----------------
+    // ---------------- inference (GPU + sync); input already in buffers[0] ----------------
     {
-        LITE_CPU_SCOPE_OPT(prof, "infer(H2D+gpu)");
-        cudaMemcpyAsync(buffers[0], input_vector.data(), 1 * 3 * 512 * 512 * sizeof(float),
-                        cudaMemcpyHostToDevice, stream);
-        cudaStreamSynchronize(stream);
+        LITE_CPU_SCOPE_OPT(prof, "infer(gpu)");
         bool status = trt_context->enqueueV3(stream);
         if (!status) {
             std::cerr << "Failed to inference" << std::endl;

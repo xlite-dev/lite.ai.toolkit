@@ -9,6 +9,7 @@
 #include "lite/trt/core/trt_config.h"
 #include "lite/ort/cv/face_utils.h"
 #include "lite/trt/kernel/face_restoration_postprocess_manager.h"
+#include "lite/trt/kernel/face_restoration_preprocess_manager.h"
 #include "lite/trt/kernel/bgr2rgb_manager.h"
 #include "lite/trt/kernel/paste_back_manager.h"
 
@@ -30,7 +31,9 @@ namespace trtcv{
                         lite::bench::Profiler *prof = nullptr);
 
     private:
-        PasteBackGPU paste_back_gpu_;  // GPU fused paste_back, reuses device buffers
+        PasteBackGPU paste_back_gpu_;            // GPU fused paste_back, reuses device buffers
+        FaceRestorePreprocessGPU preprocess_gpu_; // GPU fused bgr2rgb+normalize+CHW into input buffer
+        cv::Mat box_mask_cache_;                 // static box mask is size-only; compute once and reuse
 
     };
 }
