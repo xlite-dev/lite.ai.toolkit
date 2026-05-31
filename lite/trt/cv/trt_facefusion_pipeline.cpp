@@ -3,13 +3,30 @@
 //
 
 #include "trt_facefusion_pipeline.h"
+#include <filesystem>
+#include <stdexcept>
+#include <string>
 using trtcv::TRTFaceFusionPipeLine;
+
+namespace {
+// Fail fast with a clear message instead of crashing deep inside TensorRT/OpenCV.
+inline void require_file(const std::string &path, const char *what) {
+    if (!std::filesystem::exists(path))
+        throw std::runtime_error(std::string("[FaceFusion] ") + what + " not found: " + path);
+}
+}
 
 TRTFaceFusionPipeLine::TRTFaceFusionPipeLine(const std::string &face_detect_engine_path,
                                              const std::string &face_landmarks_68_engine_path,
                                              const std::string &face_recognizer_engine_path,
                                              const std::string &face_swap_engine_path,
                                              const std::string &face_restoration_engine_path) {
+    require_file(face_detect_engine_path,       "face-detect engine");
+    require_file(face_landmarks_68_engine_path, "face-landmarks engine");
+    require_file(face_recognizer_engine_path,   "face-recognizer engine");
+    require_file(face_swap_engine_path,         "face-swap engine");
+    require_file(face_restoration_engine_path,  "face-restoration engine");
+
     face_detect  = std::make_unique<TRTYoloFaceV8>(face_detect_engine_path,1);
     face_landmarks = std::make_unique<TRTFaceFusionFace68Landmarks>(face_landmarks_68_engine_path,1);
     face_recognizer = std::make_unique<TRTFaceFusionFaceRecognizer>(face_recognizer_engine_path,1);
@@ -28,6 +45,8 @@ void TRTFaceFusionPipeLine::detect(const std::string &source_image, int src_inde
     // 最终也就是 image -> embeding
     std::vector<lite::types::Boxf> detected_boxes;
     cv::Mat img_bgr = cv::imread(source_image);
+    if (img_bgr.empty())
+        throw std::runtime_error("[FaceFusion] cannot read source image: " + source_image);
     auto img_bgr_src = img_bgr.clone();
     face_detect->detect(img_bgr,detected_boxes,0.25f,0.45f);
 
@@ -40,16 +59,15 @@ void TRTFaceFusionPipeLine::detect(const std::string &source_image, int src_inde
         }
     }
 
-
+    if (src_final_boxes.empty())
+        throw std::runtime_error("[FaceFusion] no face detected in source image: " + source_image);
+    if (src_index < 0 || src_index >= static_cast<int>(src_final_boxes.size()))
+        throw std::runtime_error("[FaceFusion] source face index " + std::to_string(src_index) +
+                                 " out of range (" + std::to_string(src_final_boxes.size()) + " face(s) detected)");
 
     std::vector<cv::Point2f> face_landmark_5of68;
-
-    if (src_final_boxes.size()==1)
-    {
-        face_landmarks->detect(img_bgr, src_final_boxes[0],face_landmark_5of68);
-    }else{
-        face_landmarks->detect(img_bgr, src_final_boxes[src_index],face_landmark_5of68);
-    }
+    int src_pick = (src_final_boxes.size() == 1) ? 0 : src_index;
+    face_landmarks->detect(img_bgr, src_final_boxes[src_pick], face_landmark_5of68);
 
     // 这里准备使用多线程来进行操作 因为这里的操作和下面target的操作是独立的
     // 这段代码仅仅是为了测试多线程的效果
@@ -70,6 +88,8 @@ void TRTFaceFusionPipeLine::detect(const std::string &source_image, int src_inde
     // 最终也就是 image -> landmarks
     std::vector<lite::types::Boxf> target_detected_boxes;
     cv::Mat target_img_bgr = cv::imread(target_image);
+    if (target_img_bgr.empty())
+        throw std::runtime_error("[FaceFusion] cannot read target image: " + target_image);
     auto target_img_bgr_src = target_img_bgr.clone();
     face_detect->detect(target_img_bgr, target_detected_boxes,0.25f,0.45f);
 
@@ -81,7 +101,13 @@ void TRTFaceFusionPipeLine::detect(const std::string &source_image, int src_inde
             target_final_boxes.emplace_back(current_box);
         }
     }
-    auto target_test_bounding_box = target_final_boxes[target_index];
+
+    if (target_final_boxes.empty())
+        throw std::runtime_error("[FaceFusion] no face detected in target image: " + target_image);
+    if (target_index < 0 || target_index >= static_cast<int>(target_final_boxes.size()))
+        throw std::runtime_error("[FaceFusion] target face index " + std::to_string(target_index) +
+                                 " out of range (" + std::to_string(target_final_boxes.size()) + " face(s) detected)");
+
     std::vector<cv::Point2f> target_face_landmark_5of68;
 //    face68Landmarks->detect_async(target_img_bgr_src, target_test_bounding_box, target_face_landmark_5of68);
 //    face68Landmarks->wait_for_completion();
