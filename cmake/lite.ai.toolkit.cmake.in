@@ -1,9 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8)
 
 set(ENABLE_ONNXRUNTIME @ENABLE_ONNXRUNTIME@)
-set(ENABLE_MNN @ENABLE_MNN@)
-set(ENABLE_NCNN @ENABLE_NCNN@)
-set(ENABLE_TNN @ENABLE_TNN@)
 set(ENABLE_TENSORRT @ENABLE_TENSORRT@)
 set(CUDA_DIR @CUDA_DIR@)
 set(TensorRT_DIR @TensorRT_DIR@)
@@ -13,8 +10,8 @@ if (NOT (UNIX AND NOT APPLE))
   message(FATAL_ERROR "lite.ai.toolkit>=0.2 not support for windows/mac now!")
 endif()
 
-if ((NOT ENABLE_ONNXRUNTIME) AND (NOT ENABLE_MNN))
-    message(FATAL_ERROR "One of ONNXRuntime/MNN Backend must be enable!")
+if (NOT ENABLE_ONNXRUNTIME)
+    message(FATAL_ERROR "ONNXRuntime backend must be enabled!")
 endif()
 
 # lite.ai.toolkit 
@@ -44,33 +41,6 @@ if (ENABLE_ONNXRUNTIME)
   list(APPEND Lite_AI_INCLUDE_DIRS ${THIRD_PARTY_PATH}/onnxruntime/include)
   list(APPEND Lite_AI_LIBS_DIRS ${THIRD_PARTY_PATH}/onnxruntime/lib)
   list(APPEND Lite_AI_LIBS onnxruntime)
-endif()
-
-# MNN
-if (ENABLE_MNN)
-  include_directories(${THIRD_PARTY_PATH}/MNN/include)
-  link_directories(${THIRD_PARTY_PATH}/MNN/lib)
-  list(APPEND Lite_AI_INCLUDE_DIRS ${THIRD_PARTY_PATH}/MNN/include)
-  list(APPEND Lite_AI_LIBS_DIRS ${THIRD_PARTY_PATH}/MNN/lib)
-  list(APPEND Lite_AI_LIBS MNN)
-endif()
-
-# TNN
-if (ENABLE_TNN)
-  include_directories(${THIRD_PARTY_PATH}/TNN/include)
-  link_directories(${THIRD_PARTY_PATH}/TNN/lib)
-  list(APPEND Lite_AI_INCLUDE_DIRS ${THIRD_PARTY_PATH}/TNN/include)
-  list(APPEND Lite_AI_LIBS_DIRS ${THIRD_PARTY_PATH}/TNN/lib)
-  list(APPEND Lite_AI_LIBS TNN)
-endif()
-
-# ncnn
-if (ENABLE_NCNN)
-  include_directories(${THIRD_PARTY_PATH}/ncnn/include)
-  link_directories(${THIRD_PARTY_PATH}/ncnn/lib)
-  list(APPEND Lite_AI_INCLUDE_DIRS ${THIRD_PARTY_PATH}/ncnn/include)
-  list(APPEND Lite_AI_LIBS_DIRS ${THIRD_PARTY_PATH}/ncnn/lib)
-  list(APPEND Lite_AI_LIBS ncnn)
 endif()
 
 # tensorrt

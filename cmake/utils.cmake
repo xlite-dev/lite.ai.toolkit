@@ -57,24 +57,6 @@ function(add_lite_ai_toolkit_shared_library version soversion)
         link_directories(${CMAKE_SOURCE_DIR}/lite/bin)
     endif ()
 
-    if (ENABLE_MNN)
-        include(cmake/MNN.cmake)
-        set(LITE_SRCS ${LITE_SRCS} ${MNN_SRCS})
-        set(LITE_DEPENDENCIES ${LITE_DEPENDENCIES} MNN)
-    endif ()
-
-    if (ENABLE_NCNN)
-        include(cmake/ncnn.cmake)
-        set(LITE_SRCS ${LITE_SRCS} ${NCNN_SRCS})
-        set(LITE_DEPENDENCIES ${LITE_DEPENDENCIES} ncnn)
-    endif ()
-
-    if (ENABLE_TNN)
-        include(cmake/TNN.cmake)
-        set(LITE_SRCS ${LITE_SRCS} ${TNN_SRCS})
-        set(LITE_DEPENDENCIES ${LITE_DEPENDENCIES} TNN)
-    endif ()
-
     # 4. shared library
     add_library(lite.ai.toolkit SHARED ${LITE_SRCS})
     target_link_libraries(lite.ai.toolkit ${LITE_DEPENDENCIES})
