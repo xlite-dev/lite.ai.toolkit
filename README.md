@@ -87,7 +87,17 @@ See [tensorrt-linux-x86_64.zh.md](./docs/tensorrt/tensorrt-linux-x86_64.zh.md) f
 <div id="lite.ai.toolkit-Quick-Start"></div>
 
 #### Flagship: FaceFusion face-swap pipeline on the GPU
-End-to-end source→target face swap, fully on TensorRT. See [`test_lite_facefusion_pipeline.cpp`](https://github.com/xlite-dev/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_facefusion_pipeline.cpp) for the full example (engine paths + I/O).
+End-to-end source→target face swap, fully on TensorRT. **Out of the box**, build with
+`bash ./build.sh tensorrt` and run the CLI on your own images — no source editing:
+
+```bash
+# build the 5 engines once, then run:
+bash ./build_facefusion_engines.sh <onnx_dir> <engine_dir>
+./build/install/bin/lite_facefusion_cli <engine_dir> source.jpg target.jpg output.jpg
+```
+
+Full walkthrough: **[docs/facefusion_quickstart.md](./docs/facefusion_quickstart.md)**. The C++ API
+(see [`test_lite_facefusion_pipeline.cpp`](https://github.com/xlite-dev/lite.ai.toolkit/blob/main/examples/lite/cv/test_lite_facefusion_pipeline.cpp)):
 
 ```c++
 #include "lite/lite.h"
