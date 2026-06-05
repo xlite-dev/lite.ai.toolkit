@@ -12,6 +12,10 @@ void TRTFaceFusionFaceSwap::preprocess(cv::Mat &target_face, std::vector<float> 
     std::tie(preprocessed_mat, affine_martix) = face_utils::warp_face_by_face_landmark_5(target_face,target_landmark_5,face_utils::ARCFACE_128_V2);
 
     std::vector<float> crop_size= {128.0,128.0};
+    // crop_list is a member; it was emplace_back'd every call and never cleared,
+    // growing unbounded. Only crop_list[0] is used and the mask is identical each
+    // call, so keep exactly the current one.
+    crop_list.clear();
     crop_list.emplace_back(face_utils::create_static_box_mask(crop_size));
 
     cv::cvtColor(preprocessed_mat,preprocessed_mat,cv::COLOR_BGR2RGB);

@@ -77,11 +77,13 @@ std::vector<int> NMSCudaManager::perform_nms(
         throw std::invalid_argument("Box and confidence sizes must match");
     }
 
-    // 初始化或调整资源大小
+    // Grow the device buffers only when the current capacity is too small;
+    // init() is a no-op when num_boxes already fits. (Previously this was
+    // `if (true) init(max(num_boxes, max_boxes_num * 2))`, which RE-ALLOCATED
+    // the buffers at double the size on EVERY call -> geometric GPU memory
+    // growth (x4 per pipeline frame, since detect runs twice) -> CUDA OOM.)
     const int num_boxes = boxes.size();
-    if (true ) {
-        init(fmax(num_boxes, max_boxes_num * 2));
-    }
+    init(num_boxes);
 
     // 准备数据
     std::vector<float> box_data(num_boxes * 5);

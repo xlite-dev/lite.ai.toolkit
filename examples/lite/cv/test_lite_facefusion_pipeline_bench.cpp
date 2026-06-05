@@ -51,6 +51,14 @@ int main(int argc, char *argv[]) {
 
   lite::bench::Profiler prof;
   for (int i = 0; i < iters; ++i) {
+    // Sanity: GPU memory should stay flat across iterations (no leak / no
+    // per-call buffer growth). Printed sparsely to avoid flooding the output.
+    if (i == 0 || i == iters - 1 || i % 10 == 0) {
+      size_t freeB = 0, totalB = 0;
+      cudaMemGetInfo(&freeB, &totalB);
+      std::cout << "[mem] iter " << i << " used=" << (totalB - freeB) / (1024 * 1024)
+                << " MiB" << std::endl;
+    }
     lite::bench::CpuTimer t;
     t.start();
     pipeline.detect(source_img, 0, target_img, 0, out_path, &prof);
