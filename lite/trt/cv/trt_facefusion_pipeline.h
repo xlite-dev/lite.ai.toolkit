@@ -13,6 +13,7 @@
 #include "lite/trt/cv/trt_face_68landmarks.h"
 #include "lite/trt/cv/trt_face_68landmarks_mt.h"
 #include "lite/trt/cv/trt_yolofacev8_mt.h"
+#include "lite/bench/profiler.h"
 
 namespace trtcv{
     class TRTFaceFusionPipeLine{
@@ -35,7 +36,8 @@ namespace trtcv{
         std::unique_ptr<trt_face_68landmarks_mt> face_landmarks_mt;
 
     public:
-        void detect(const std::string &source_image,int src_index,const std::string &target_image,int target_index,const std::string &save_image);
+        void detect(const std::string &source_image,int src_index,const std::string &target_image,int target_index,const std::string &save_image,
+                    lite::bench::Profiler *prof = nullptr);
 
     };
 }

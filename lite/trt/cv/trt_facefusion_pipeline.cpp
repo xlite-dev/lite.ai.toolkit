@@ -32,32 +32,31 @@ TRTFaceFusionPipeLine::TRTFaceFusionPipeLine(const std::string &face_detect_engi
     face_recognizer = std::make_unique<TRTFaceFusionFaceRecognizer>(face_recognizer_engine_path,1);
     face_swap = std::make_unique<TRTFaceFusionFaceSwap>(face_swap_engine_path,1);
     face_restoration = std::make_unique<TRTFaceFusionFaceRestoration>(face_restoration_engine_path,1);
-
-
 }
 
-
-
-void TRTFaceFusionPipeLine::detect(const std::string &source_image, int src_index, const std::string &target_image,
-                                   int target_index, const std::string &save_image) {
-    // source 的全部流程
-    // image -> detect -> landmarks -> recognizer -> embeding
-    // 最终也就是 image -> embeding
-    std::vector<lite::types::Boxf> detected_boxes;
-    cv::Mat img_bgr = cv::imread(source_image);
+// Per-stage timing is opt-in: pass a Profiler to break the pipeline down into
+// imread / detect / landmark (x2, source+target) / recognizer / swap / restoration.
+// When prof == nullptr the LITE_CPU_SCOPE_OPT scopes are zero-overhead. Each stage
+// returns a host-visible result (boxes / landmarks / Mat), so it synchronizes and
+// CPU-side wall-clock timing is accurate.
+void TRTFaceFusionPipeLine::detect(const std::string &source_image, int src_index,
+                                   const std::string &target_image, int target_index,
+                                   const std::string &save_image,
+                                   lite::bench::Profiler *prof) {
+    // ---- source: image -> detect -> landmarks -> recognizer -> embedding ----
+    cv::Mat img_bgr;
+    { LITE_CPU_SCOPE_OPT(prof, "imread_src"); img_bgr = cv::imread(source_image); }
     if (img_bgr.empty())
         throw std::runtime_error("[FaceFusion] cannot read source image: " + source_image);
     auto img_bgr_src = img_bgr.clone();
-    face_detect->detect(img_bgr,detected_boxes,0.25f,0.45f);
+
+    std::vector<lite::types::Boxf> detected_boxes;
+    { LITE_CPU_SCOPE_OPT(prof, "detect_src");
+      face_detect->detect(img_bgr, detected_boxes, 0.25f, 0.45f); }
 
     std::vector<lite::types::Boxf> src_final_boxes;
     for (auto current_box : detected_boxes)
-    {
-        if (current_box.score != 0)
-        {
-            src_final_boxes.emplace_back(current_box);
-        }
-    }
+        if (current_box.score != 0) src_final_boxes.emplace_back(current_box);
 
     if (src_final_boxes.empty())
         throw std::runtime_error("[FaceFusion] no face detected in source image: " + source_image);
@@ -67,40 +66,26 @@ void TRTFaceFusionPipeLine::detect(const std::string &source_image, int src_inde
 
     std::vector<cv::Point2f> face_landmark_5of68;
     int src_pick = (src_final_boxes.size() == 1) ? 0 : src_index;
-    face_landmarks->detect(img_bgr, src_final_boxes[src_pick], face_landmark_5of68);
+    { LITE_CPU_SCOPE_OPT(prof, "landmark_src");
+      face_landmarks->detect(img_bgr, src_final_boxes[src_pick], face_landmark_5of68); }
 
-    // 这里准备使用多线程来进行操作 因为这里的操作和下面target的操作是独立的
-    // 这段代码仅仅是为了测试多线程的效果
-    // 到时候需要更改
-//    std::string engine_path = "/home/lite.ai.toolkit/examples/hub/trt/2dfan4_fp16.engine";
-//    trt_face_68landmarks_mt *face68Landmarks = new trt_face_68landmarks_mt(engine_path,2);
-//    face68Landmarks->detect_async(img_bgr, test_bounding_box, face_landmark_5of68);
-//    face68Landmarks->wait_for_completion();
-
-
-
-//    face_landmarks->detect(img_bgr, test_bounding_box, face_landmark_5of68);
     std::vector<float> source_image_embeding;
-    face_recognizer->detect(img_bgr_src,face_landmark_5of68,source_image_embeding);
+    { LITE_CPU_SCOPE_OPT(prof, "recognizer");
+      face_recognizer->detect(img_bgr_src, face_landmark_5of68, source_image_embeding); }
 
-    // target 的全部流程
-    // image -> detect -> landmarks
-    // 最终也就是 image -> landmarks
-    std::vector<lite::types::Boxf> target_detected_boxes;
-    cv::Mat target_img_bgr = cv::imread(target_image);
+    // ---- target: image -> detect -> landmarks ----
+    cv::Mat target_img_bgr;
+    { LITE_CPU_SCOPE_OPT(prof, "imread_tgt"); target_img_bgr = cv::imread(target_image); }
     if (target_img_bgr.empty())
         throw std::runtime_error("[FaceFusion] cannot read target image: " + target_image);
-    auto target_img_bgr_src = target_img_bgr.clone();
-    face_detect->detect(target_img_bgr, target_detected_boxes,0.25f,0.45f);
+
+    std::vector<lite::types::Boxf> target_detected_boxes;
+    { LITE_CPU_SCOPE_OPT(prof, "detect_tgt");
+      face_detect->detect(target_img_bgr, target_detected_boxes, 0.25f, 0.45f); }
 
     std::vector<lite::types::Boxf> target_final_boxes;
     for (auto current_box : target_detected_boxes)
-    {
-        if (current_box.score != 0)
-        {
-            target_final_boxes.emplace_back(current_box);
-        }
-    }
+        if (current_box.score != 0) target_final_boxes.emplace_back(current_box);
 
     if (target_final_boxes.empty())
         throw std::runtime_error("[FaceFusion] no face detected in target image: " + target_image);
@@ -109,22 +94,14 @@ void TRTFaceFusionPipeLine::detect(const std::string &source_image, int src_inde
                                  " out of range (" + std::to_string(target_final_boxes.size()) + " face(s) detected)");
 
     std::vector<cv::Point2f> target_face_landmark_5of68;
-//    face68Landmarks->detect_async(target_img_bgr_src, target_test_bounding_box, target_face_landmark_5of68);
-//    face68Landmarks->wait_for_completion();
-//    face68Landmarks->shutdown();
+    int tgt_pick = (target_final_boxes.size() == 1) ? 0 : target_index;
+    { LITE_CPU_SCOPE_OPT(prof, "landmark_tgt");
+      face_landmarks->detect(target_img_bgr, target_final_boxes[tgt_pick], target_face_landmark_5of68); }
 
-//    face_landmarks->detect(target_img_bgr, target_test_bounding_box,target_face_landmark_5of68);
-
-    if (target_final_boxes.size()==1)
-    {
-        face_landmarks->detect(target_img_bgr, target_final_boxes[0],target_face_landmark_5of68);
-    }else{
-        face_landmarks->detect(target_img_bgr, target_final_boxes[target_index],target_face_landmark_5of68);
-    }
-    // 公共部分
+    // ---- swap + restore ----
     cv::Mat face_swap_image;
-    face_swap->detect(target_img_bgr,source_image_embeding,target_face_landmark_5of68,face_swap_image);
-    face_restoration->detect(face_swap_image,target_face_landmark_5of68,save_image);
+    { LITE_CPU_SCOPE_OPT(prof, "swap");
+      face_swap->detect(target_img_bgr, source_image_embeding, target_face_landmark_5of68, face_swap_image); }
+    { LITE_CPU_SCOPE_OPT(prof, "restoration");
+      face_restoration->detect(face_swap_image, target_face_landmark_5of68, save_image); }
 }
-
-
