@@ -36,6 +36,14 @@ namespace trtcv{
         std::unique_ptr<trt_face_68landmarks_mt> face_landmarks_mt;
 
     public:
+        // Compute-only, in-memory: decoded images in -> restored frame out, no disk I/O.
+        // This is the path benchmarks and real (video / server) use should call.
+        cv::Mat detect(const cv::Mat &source_image, int src_index,
+                       const cv::Mat &target_image, int target_index,
+                       lite::bench::Profiler *prof = nullptr);
+
+        // Convenience wrapper: file paths in, result written to disk. Thin layer over the
+        // in-memory core above (imread / imwrite are timed separately when benchmarking).
         void detect(const std::string &source_image,int src_index,const std::string &target_image,int target_index,const std::string &save_image,
                     lite::bench::Profiler *prof = nullptr);
 

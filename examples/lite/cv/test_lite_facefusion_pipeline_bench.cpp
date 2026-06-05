@@ -42,14 +42,26 @@ int main(int argc, char *argv[]) {
   lite::trt::cv::face::swap::FaceFusionPipeLine pipeline(
       detect_engine, landmark_engine, recognizer_engine, swap_engine, restoration_engine);
 
+  // Decode the two images ONCE, outside the timed loop. Real pipelines (video /
+  // server) decode at the edge, not per frame; keeping imread/imwrite out of the
+  // loop is what makes this a *compute-only* benchmark (the file-path detect()
+  // overload would re-read both images and write the result every iteration).
+  cv::Mat src = cv::imread(source_img);
+  cv::Mat tgt = cv::imread(target_img);
+  if (src.empty() || tgt.empty()) {
+    std::cerr << "[bench] cannot read source/target image" << std::endl;
+    return 1;
+  }
   std::cout << "[bench] source=" << source_img << " target=" << target_img
-            << "\n[bench] warmup=" << warmup << " iters=" << iters << std::endl;
+            << "\n[bench] warmup=" << warmup << " iters=" << iters
+            << "  (compute-only: imread/imwrite excluded)" << std::endl;
 
   // Warmup (lazy engine/context init, cudnn autotune) — excluded from stats.
   for (int i = 0; i < warmup; ++i)
-    pipeline.detect(source_img, 0, target_img, 0, out_path);
+    pipeline.detect(src, 0, tgt, 0);
 
   lite::bench::Profiler prof;
+  cv::Mat out;
   for (int i = 0; i < iters; ++i) {
     // Sanity: GPU memory should stay flat across iterations (no leak / no
     // per-call buffer growth). Printed sparsely to avoid flooding the output.
@@ -61,13 +73,16 @@ int main(int argc, char *argv[]) {
     }
     lite::bench::CpuTimer t;
     t.start();
-    pipeline.detect(source_img, 0, target_img, 0, out_path, &prof);
+    out = pipeline.detect(src, 0, tgt, 0, &prof);
     prof.tick(t.stop_ms());
   }
 
-  prof.report("FaceFusion pipeline (per-stage, end-to-end)");
+  prof.report("FaceFusion pipeline (per-stage, compute-only)");
   prof.to_csv(csv_path);
-  std::cout << "[bench] sample result: " << out_path << std::endl;
+  if (!out.empty()) {
+    cv::imwrite(out_path, out);   // save one result (outside the timed loop) for visual check
+    std::cout << "[bench] sample result: " << out_path << std::endl;
+  }
   return 0;
 }
 #else

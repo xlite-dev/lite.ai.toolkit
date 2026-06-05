@@ -34,21 +34,20 @@ TRTFaceFusionPipeLine::TRTFaceFusionPipeLine(const std::string &face_detect_engi
     face_restoration = std::make_unique<TRTFaceFusionFaceRestoration>(face_restoration_engine_path,1);
 }
 
-// Per-stage timing is opt-in: pass a Profiler to break the pipeline down into
-// imread / detect / landmark (x2, source+target) / recognizer / swap / restoration.
-// When prof == nullptr the LITE_CPU_SCOPE_OPT scopes are zero-overhead. Each stage
-// returns a host-visible result (boxes / landmarks / Mat), so it synchronizes and
-// CPU-side wall-clock timing is accurate.
-void TRTFaceFusionPipeLine::detect(const std::string &source_image, int src_index,
-                                   const std::string &target_image, int target_index,
-                                   const std::string &save_image,
-                                   lite::bench::Profiler *prof) {
-    // ---- source: image -> detect -> landmarks -> recognizer -> embedding ----
-    cv::Mat img_bgr;
-    { LITE_CPU_SCOPE_OPT(prof, "imread_src"); img_bgr = cv::imread(source_image); }
-    if (img_bgr.empty())
-        throw std::runtime_error("[FaceFusion] cannot read source image: " + source_image);
-    auto img_bgr_src = img_bgr.clone();
+// Compute-only core: in-memory images in, restored frame out. NO disk I/O.
+// Per-stage timing is opt-in via prof (LITE_CPU_SCOPE_OPT is zero-overhead when null);
+// each stage returns a host-visible result, so CPU-side wall-clock timing is accurate.
+cv::Mat TRTFaceFusionPipeLine::detect(const cv::Mat &source_image, int src_index,
+                                      const cv::Mat &target_image, int target_index,
+                                      lite::bench::Profiler *prof) {
+    if (source_image.empty())
+        throw std::runtime_error("[FaceFusion] source image is empty");
+    if (target_image.empty())
+        throw std::runtime_error("[FaceFusion] target image is empty");
+
+    // ---- source: detect -> landmarks -> recognizer -> embedding ----
+    cv::Mat img_bgr = source_image.clone();   // sub-models take a non-const cv::Mat&
+    cv::Mat img_bgr_src = img_bgr.clone();
 
     std::vector<lite::types::Boxf> detected_boxes;
     { LITE_CPU_SCOPE_OPT(prof, "detect_src");
@@ -59,7 +58,7 @@ void TRTFaceFusionPipeLine::detect(const std::string &source_image, int src_inde
         if (current_box.score != 0) src_final_boxes.emplace_back(current_box);
 
     if (src_final_boxes.empty())
-        throw std::runtime_error("[FaceFusion] no face detected in source image: " + source_image);
+        throw std::runtime_error("[FaceFusion] no face detected in source image");
     if (src_index < 0 || src_index >= static_cast<int>(src_final_boxes.size()))
         throw std::runtime_error("[FaceFusion] source face index " + std::to_string(src_index) +
                                  " out of range (" + std::to_string(src_final_boxes.size()) + " face(s) detected)");
@@ -73,11 +72,8 @@ void TRTFaceFusionPipeLine::detect(const std::string &source_image, int src_inde
     { LITE_CPU_SCOPE_OPT(prof, "recognizer");
       face_recognizer->detect(img_bgr_src, face_landmark_5of68, source_image_embeding); }
 
-    // ---- target: image -> detect -> landmarks ----
-    cv::Mat target_img_bgr;
-    { LITE_CPU_SCOPE_OPT(prof, "imread_tgt"); target_img_bgr = cv::imread(target_image); }
-    if (target_img_bgr.empty())
-        throw std::runtime_error("[FaceFusion] cannot read target image: " + target_image);
+    // ---- target: detect -> landmarks ----
+    cv::Mat target_img_bgr = target_image.clone();
 
     std::vector<lite::types::Boxf> target_detected_boxes;
     { LITE_CPU_SCOPE_OPT(prof, "detect_tgt");
@@ -88,7 +84,7 @@ void TRTFaceFusionPipeLine::detect(const std::string &source_image, int src_inde
         if (current_box.score != 0) target_final_boxes.emplace_back(current_box);
 
     if (target_final_boxes.empty())
-        throw std::runtime_error("[FaceFusion] no face detected in target image: " + target_image);
+        throw std::runtime_error("[FaceFusion] no face detected in target image");
     if (target_index < 0 || target_index >= static_cast<int>(target_final_boxes.size()))
         throw std::runtime_error("[FaceFusion] target face index " + std::to_string(target_index) +
                                  " out of range (" + std::to_string(target_final_boxes.size()) + " face(s) detected)");
@@ -98,10 +94,32 @@ void TRTFaceFusionPipeLine::detect(const std::string &source_image, int src_inde
     { LITE_CPU_SCOPE_OPT(prof, "landmark_tgt");
       face_landmarks->detect(target_img_bgr, target_final_boxes[tgt_pick], target_face_landmark_5of68); }
 
-    // ---- swap + restore ----
+    // ---- swap + restore (restore() returns the frame; no disk write) ----
     cv::Mat face_swap_image;
     { LITE_CPU_SCOPE_OPT(prof, "swap");
       face_swap->detect(target_img_bgr, source_image_embeding, target_face_landmark_5of68, face_swap_image); }
+
+    cv::Mat result;
     { LITE_CPU_SCOPE_OPT(prof, "restoration");
-      face_restoration->detect(face_swap_image, target_face_landmark_5of68, save_image); }
+      result = face_restoration->restore(face_swap_image, target_face_landmark_5of68, nullptr); }
+    return result;
+}
+
+// Convenience wrapper: file paths in, result written to disk. Thin layer over the
+// in-memory core; imread/imwrite are timed separately when a Profiler is passed.
+void TRTFaceFusionPipeLine::detect(const std::string &source_image, int src_index,
+                                   const std::string &target_image, int target_index,
+                                   const std::string &save_image,
+                                   lite::bench::Profiler *prof) {
+    cv::Mat src, tgt;
+    { LITE_CPU_SCOPE_OPT(prof, "imread_src"); src = cv::imread(source_image); }
+    if (src.empty())
+        throw std::runtime_error("[FaceFusion] cannot read source image: " + source_image);
+    { LITE_CPU_SCOPE_OPT(prof, "imread_tgt"); tgt = cv::imread(target_image); }
+    if (tgt.empty())
+        throw std::runtime_error("[FaceFusion] cannot read target image: " + target_image);
+
+    cv::Mat out = detect(src, src_index, tgt, target_index, prof);
+
+    { LITE_CPU_SCOPE_OPT(prof, "imwrite"); cv::imwrite(save_image, out); }
 }
