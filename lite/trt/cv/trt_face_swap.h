@@ -23,6 +23,7 @@ namespace trtcv{
     private:
         std::vector<cv::Mat> crop_list;
         cv::Mat affine_martix;
+        PasteBackGPU paste_back_gpu_;   // GPU-fused paste-back, reused device buffers (same as restoration)
     public:
         void detect(cv::Mat &target_image,std::vector<float> source_face_embeding,std::vector<cv::Point2f> target_landmark_5,
                     cv::Mat &face_swap_image);

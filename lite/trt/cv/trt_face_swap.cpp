@@ -122,8 +122,10 @@ void TRTFaceFusionFaceSwap::detect(cv::Mat &target_image, std::vector<float> sou
 
     // 计算pasteback时间
     auto start_pasteback = std::chrono::high_resolution_clock::now();
-//    cv::Mat dst_image = face_utils::paste_back(ori_image,mat,crop_list[0],affine_martix);
-    cv::Mat dst_image = launch_paste_back(ori_image,mat,crop_list[0],affine_martix);
+    // GPU-fused paste-back (reused device buffers, no per-frame cudaMalloc), reusing the
+    // exact kernel restoration uses. Numerically equivalent to launch_paste_back.
+//    cv::Mat dst_image = launch_paste_back(ori_image,mat,crop_list[0],affine_martix);
+    cv::Mat dst_image = paste_back_gpu_.paste_back(ori_image, mat, crop_list[0], affine_martix, stream);
     auto end_pasteback = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> diff_pasteback = end_pasteback-start_pasteback;
     std::cout << "Face_Swap pasteback Time: " << diff_pasteback.count() * 1000 << " ms\n";
