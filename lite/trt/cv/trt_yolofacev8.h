@@ -9,6 +9,7 @@
 #include "lite/trt/kernel/nms_cuda_manager.h"
 #include "lite/trt/kernel/generate_bbox_cuda_manager.h"
 #include "lite/trt/kernel/bgr2rgb.cuh"
+#include "lite/trt/kernel/yoloface_preprocess_manager.h"
 
 namespace trtcv{
     class LITE_EXPORTS TRTYoloFaceV8 : public BasicTRTHandler{
@@ -35,6 +36,7 @@ namespace trtcv{
 
         float ratio_width ;
         float ratio_height;
+        YoloFacePreprocessGPU preprocess_gpu_;   // GPU-fused normalize + BGR HWC->CHW
 
     private:
         // transform func
@@ -42,8 +44,6 @@ namespace trtcv{
         float get_iou(const lite::types::Boxf box1, const lite::types::Boxf box2);
 
         std::vector<int> nms(std::vector<lite::types::Boxf> boxes, std::vector<float> confidences, const float nms_thresh);
-
-        cv::Mat normalize(cv::Mat srcImg);
 
         void generate_box(float* trt_outputs, std::vector<lite::types::Boxf>& boxes,float conf_threshold, float iou_threshold);
     public:
