@@ -12,6 +12,24 @@ using trtcv::TRTFaceFusionFaceRestoration;
 cv::Mat TRTFaceFusionFaceRestoration::restore(cv::Mat &face_swap_image,
                                               std::vector<cv::Point2f> &target_landmarks_5,
                                               lite::bench::Profiler *prof) {
+    // upload the input frame to the device once, then run the shared device-resident body.
+    {
+        LITE_CPU_SCOPE_OPT(prof, "  upload");
+        input_frame_.upload(face_swap_image, stream);
+    }
+    return restore_core(input_frame_, target_landmarks_5, prof);
+}
+
+cv::Mat TRTFaceFusionFaceRestoration::restore(const DeviceFrame &input_frame,
+                                              std::vector<cv::Point2f> &target_landmarks_5,
+                                              lite::bench::Profiler *prof) {
+    // input frame is already on the device (e.g. swap's output) — no upload.
+    return restore_core(input_frame, target_landmarks_5, prof);
+}
+
+cv::Mat TRTFaceFusionFaceRestoration::restore_core(const DeviceFrame &frame,
+                                                   std::vector<cv::Point2f> &target_landmarks_5,
+                                                   lite::bench::Profiler *prof) {
     cv::Mat affine_matrix;
     cv::Mat box_mask;
 
@@ -35,17 +53,11 @@ cv::Mat TRTFaceFusionFaceRestoration::restore(cv::Mat &face_swap_image,
         }
 
         {
-            // Upload the input frame to the device ONCE; both the NPP warp (here) and the
-            // paste_back (below) read it straight from device memory — no second full-frame H2D.
-            LITE_CPU_SCOPE_OPT(prof, "  upload");
-            input_frame_.upload(face_swap_image, stream);
-        }
-        {
             // GPU NPP warp (reads the device-resident frame) -> device crop, then fused
             // bgr2rgb+normalize+HWC->CHW straight into the inference input buffer (buffers[0]).
             LITE_CPU_SCOPE_OPT(prof, "  warp+to_chw(gpu)");
             const unsigned char *d_crop = warp_npp_.warp_device_to_device(
-                    input_frame_.data(), input_frame_.width(), input_frame_.height(),
+                    frame.data(), frame.width(), frame.height(),
                     affine_matrix, 512, stream);
             preprocess_gpu_.run_device(d_crop, 512, 512, static_cast<float *>(buffers[0]), stream);
         }
@@ -80,11 +92,11 @@ cv::Mat TRTFaceFusionFaceRestoration::restore(cv::Mat &face_swap_image,
 
         {
             // GPU fused: inverse-mapping sampling + paste + face-enhancer blend in ONE kernel.
-            // temp frame is read straight from the device-resident input_frame_ (no full-frame
+            // temp frame is read straight from the device-resident `frame` (no full-frame
             // H2D). blend_alpha=0.8 folds the old CPU blend_frame(target 0.2 / paste 0.8) in.
             LITE_CPU_SCOPE_OPT(prof, "  paste_back+blend");
             dst_image = paste_back_gpu_.paste_back(
-                    input_frame_.data(), input_frame_.width(), input_frame_.height(),
+                    frame.data(), frame.width(), frame.height(),
                     mat, box_mask, affine_matrix, stream, /*blend_alpha=*/0.8f);
         }
     }

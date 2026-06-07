@@ -37,6 +37,7 @@ namespace trtcv{
 
         std::vector<float> source_embedding_;   // cached by prepare_source()
         bool source_ready_ = false;
+        DeviceFrame swapped_frame_;             // swap output stays GPU-resident -> restoration (no D2H/H2D)
 
     public:
         // ---- Split API (the right shape for video / server: the SOURCE face is usually

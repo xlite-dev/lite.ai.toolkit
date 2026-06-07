@@ -32,7 +32,15 @@ namespace trtcv{
         cv::Mat restore(cv::Mat &face_swap_image, std::vector<cv::Point2f> &target_landmarks_5,
                         lite::bench::Profiler *prof = nullptr);
 
+        // Device-pipeline variant: the input frame is ALREADY on the device (e.g. swap's output),
+        // so no upload — warp + paste read it straight from device memory.
+        cv::Mat restore(const DeviceFrame &input_frame, std::vector<cv::Point2f> &target_landmarks_5,
+                        lite::bench::Profiler *prof = nullptr);
+
     private:
+        // shared body: estimate affine -> NPP warp (from `frame`) -> infer -> postprocess -> paste.
+        cv::Mat restore_core(const DeviceFrame &frame, std::vector<cv::Point2f> &target_landmarks_5,
+                             lite::bench::Profiler *prof);
         PasteBackGPU paste_back_gpu_;            // GPU fused paste_back, reuses device buffers
         FaceRestorePreprocessGPU preprocess_gpu_; // GPU fused bgr2rgb+normalize+CHW into input buffer
         WarpAffineNpp warp_npp_;                  // GPU (NPP) affine warp; crop stays device-resident

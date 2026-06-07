@@ -10,6 +10,7 @@
 #include "lite/trt/core/trt_types.h"
 #include "lite/trt/kernel/face_swap_postproces_manager.h"
 #include "lite/trt/kernel/paste_back_manager.h"
+#include "lite/trt/kernel/device_frame.h"
 
 namespace trtcv{
     class LITE_EXPORTS TRTFaceFusionFaceSwap : BasicTRTHandler{
@@ -34,6 +35,15 @@ namespace trtcv{
         void detect(cv::Mat &target_image,std::vector<float> source_face_embeding,std::vector<cv::Point2f> target_landmark_5,
                     cv::Mat &face_swap_image);
 
+        // Device-pipeline variant: the swapped full frame stays GPU-resident in out_frame (paste
+        // writes straight to device, no D2H) so restoration can consume it without re-uploading.
+        void detect(cv::Mat &target_image,std::vector<float> source_face_embeding,std::vector<cv::Point2f> target_landmark_5,
+                    DeviceFrame &out_frame);
+
+    private:
+        // shared body: infer + postprocess into the host BGR float crop `mat` + its affine.
+        void swap_core(cv::Mat &target_image, std::vector<float> &source_face_embeding,
+                       std::vector<cv::Point2f> &target_landmark_5, cv::Mat &mat_out);
     };
 }
 

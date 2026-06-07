@@ -21,6 +21,10 @@ public:
     // Device -> host BGR uint8 (1 D2H, syncs). Returns a fresh CV_8UC3 Mat.
     cv::Mat download(cudaStream_t stream = nullptr) const;
 
+    // Size the device buffer for a w*h*3 BGR uint8 frame WITHOUT uploading (e.g. as a kernel
+    // output target). Returns the device pointer.
+    unsigned char* prepare(int w, int h) { ensure(w, h); return d_; }
+
     unsigned char* data() { return d_; }
     const unsigned char* data() const { return d_; }
     int width()  const { return w_; }

@@ -22,9 +22,10 @@ void TRTFaceFusionFaceSwap::preprocess(cv::Mat &target_face, std::vector<float> 
 }
 
 
-void TRTFaceFusionFaceSwap::detect(cv::Mat &target_image, std::vector<float> source_face_embeding,
-                                   std::vector<cv::Point2f> target_landmark_5, cv::Mat &face_swap_image) {
-    cv::Mat ori_image = target_image.clone();
+// infer + postprocess: produces the host BGR float[0,255] 128x128 swapped-face crop (owns its
+// data) and sets affine_martix. Shared by both detect() overloads.
+void TRTFaceFusionFaceSwap::swap_core(cv::Mat &target_image, std::vector<float> &source_face_embeding,
+                                      std::vector<cv::Point2f> &target_landmark_5, cv::Mat &mat_out) {
     std::vector<float> source_embeding_input;
     cv::Mat model_input_mat;
     preprocess(target_image,source_face_embeding,target_landmark_5,source_embeding_input,model_input_mat);
@@ -47,10 +48,7 @@ void TRTFaceFusionFaceSwap::detect(cv::Mat &target_image, std::vector<float> sou
     cudaMemcpyAsync(output_vector.data(),buffers[2],1 * 3 * 128 * 128 * sizeof(float),cudaMemcpyDeviceToHost,stream);
     cudaStreamSynchronize(stream);
 
-    std::vector<float> output_swap_image(1 * 3 * 128 * 128);
-    output_swap_image.assign(output_vector.begin(),output_vector.end());
-
-    // CHW float -> HWC uint8-range (denormalize); paste-back is done on the GPU below.
+    // CHW float -> HWC uint8-range (denormalize); paste-back is done on the GPU by the caller.
     std::vector<float> transposed(3 * 128 * 128);
     const int channels = 3, height = 128, width = 128;
 #pragma omp parallel for collapse(3)
@@ -59,7 +57,7 @@ void TRTFaceFusionFaceSwap::detect(cv::Mat &target_image, std::vector<float> sou
             for (int w = 0; w < width; ++w) {
                 int src_idx = c * (height * width) + h * width + w;  // CHW
                 int dst_idx = h * (width * channels) + w * channels + c;  // HWC
-                transposed[dst_idx] = output_swap_image[src_idx];
+                transposed[dst_idx] = output_vector[src_idx];
             }
         }
     }
@@ -69,9 +67,25 @@ void TRTFaceFusionFaceSwap::detect(cv::Mat &target_image, std::vector<float> sou
 
     cv::Mat mat(height, width, CV_32FC3, transposed.data());
     cv::cvtColor(mat, mat, cv::COLOR_RGB2BGR);
+    mat.copyTo(mat_out);   // own the data (transposed is local)
+}
 
-    // GPU-fused paste-back (reused device buffers, no per-frame cudaMalloc), reusing the
-    // exact kernel restoration uses. Numerically equivalent to launch_paste_back.
-    cv::Mat dst_image = paste_back_gpu_.paste_back(ori_image, mat, box_mask_, affine_martix, stream);
-    face_swap_image = dst_image;
+void TRTFaceFusionFaceSwap::detect(cv::Mat &target_image, std::vector<float> source_face_embeding,
+                                   std::vector<cv::Point2f> target_landmark_5, cv::Mat &face_swap_image) {
+    cv::Mat ori_image = target_image.clone();
+    cv::Mat mat;
+    swap_core(target_image, source_face_embeding, target_landmark_5, mat);
+    // GPU-fused paste-back (reused device buffers); numerically equivalent to launch_paste_back.
+    face_swap_image = paste_back_gpu_.paste_back(ori_image, mat, box_mask_, affine_martix, stream);
+}
+
+void TRTFaceFusionFaceSwap::detect(cv::Mat &target_image, std::vector<float> source_face_embeding,
+                                   std::vector<cv::Point2f> target_landmark_5, DeviceFrame &out_frame) {
+    cv::Mat ori_image = target_image.clone();
+    cv::Mat mat;
+    swap_core(target_image, source_face_embeding, target_landmark_5, mat);
+    // paste straight into the device-resident out_frame (no D2H) for restoration to consume.
+    paste_back_gpu_.paste_back_to_device(ori_image, mat, box_mask_, affine_martix, out_frame, stream);
+    // restoration reads out_frame on its OWN stream, so make sure this paste has completed.
+    cudaStreamSynchronize(stream);
 }

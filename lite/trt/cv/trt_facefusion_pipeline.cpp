@@ -99,14 +99,14 @@ cv::Mat TRTFaceFusionPipeLine::process(const cv::Mat &target_image, int target_i
     { LITE_CPU_SCOPE_OPT(prof, "landmark_tgt");
       face_landmarks->detect(target_img_bgr, target_final_boxes[tgt_pick], target_face_landmark_5of68); }
 
-    // ---- swap + restore (restore() returns the frame; no disk write) ----
-    cv::Mat face_swap_image;
+    // ---- swap + restore: the swapped frame stays GPU-resident in swapped_frame_, so restoration
+    //      reads it from the device (no swap-D2H + restoration-H2D round-trip across the seam) ----
     { LITE_CPU_SCOPE_OPT(prof, "swap");
-      face_swap->detect(target_img_bgr, source_embedding_, target_face_landmark_5of68, face_swap_image); }
+      face_swap->detect(target_img_bgr, source_embedding_, target_face_landmark_5of68, swapped_frame_); }
 
     cv::Mat result;
     { LITE_CPU_SCOPE_OPT(prof, "restoration");
-      result = face_restoration->restore(face_swap_image, target_face_landmark_5of68, nullptr); }
+      result = face_restoration->restore(swapped_frame_, target_face_landmark_5of68, nullptr); }
     return result;
 }
 
