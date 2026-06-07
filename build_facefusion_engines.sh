@@ -13,12 +13,11 @@ set -euo pipefail
 ONNX_DIR="${1:?usage: $0 <onnx_dir> <engine_dir>}"
 ENGINE_DIR="${2:?usage: $0 <onnx_dir> <engine_dir>}"
 TRTEXEC="${TRTEXEC:-trtexec}"
+PYTHON="${PYTHON:-python3}"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 mkdir -p "$ENGINE_DIR"
 
-# onnx_basename  engine_basename  extra_flags
-# GFPGAN stays FP32 on purpose: FP16 makes its StyleGAN modulated convs blow up
-# (grey-block artifacts). The other four are fine in FP16.
 build() {
   local onnx="$ONNX_DIR/$1" engine="$ENGINE_DIR/$2"; shift 2
   if [[ ! -f "$onnx" ]]; then
@@ -35,6 +34,20 @@ build yoloface_8n.onnx          yoloface_8n_fp16.engine          --fp16
 build 2dfan4.onnx               2dfan4_fp16.engine               --fp16
 build arcface_w600k_r50.onnx    arcface_w600k_r50_fp16.engine    --fp16
 build inswapper_128.onnx        inswapper_128_fp16.engine        --fp16
-build gfpgan_1.4.onnx           gfpgan_1.4_fp32.engine
+
+# GFPGAN: a naive --fp16 engine blows up its StyleGAN modulated convs (grey-block / a grey
+# halo around the pasted-back face). The fix is mixed precision — FP16 everywhere except the
+# style_conv/to_rgb layers, which stay FP32 (build_gfpgan_fp16_engine.py). That is numerically
+# identical to the FP32 engine (PSNR ~58 dB) while cutting the restoration stage ~3 ms.
+# Needs the TensorRT 10.x python wheel on $PYTHON; set GFPGAN_FP32=1 to fall back to plain FP32.
+GFPGAN_ENGINE="$ENGINE_DIR/gfpgan_1.4_mixed.engine"
+if [[ "${GFPGAN_FP32:-0}" == "1" ]]; then
+  build gfpgan_1.4.onnx         gfpgan_1.4_fp32.engine
+elif [[ -f "$GFPGAN_ENGINE" ]]; then
+  echo "[build_facefusion_engines] skip (exists): $GFPGAN_ENGINE"
+else
+  echo "[build_facefusion_engines] gfpgan_1.4.onnx -> $GFPGAN_ENGINE  (mixed fp16, style layers fp32)"
+  "$PYTHON" "$HERE/build_gfpgan_fp16_engine.py" "$ONNX_DIR/gfpgan_1.4.onnx" "$GFPGAN_ENGINE"
+fi
 
 echo "[build_facefusion_engines] done -> $ENGINE_DIR"

@@ -34,10 +34,18 @@ Put all 5 in one directory, e.g. `~/ff_onnx/`.
 bash ./build_facefusion_engines.sh ~/ff_onnx ~/ff_engines
 ```
 
-This runs `trtexec` once per model and writes the 5 `.engine` files into `~/ff_engines/`.
-GFPGAN is kept FP32 on purpose (FP16 produces grey-block artifacts on its StyleGAN
-modulated convs); the other four are FP16. Engines are GPU/TensorRT-version specific —
-rebuild them if you change GPU or TensorRT version.
+This runs `trtexec` for four of the models (FP16) and writes the `.engine` files into
+`~/ff_engines/`. GFPGAN is built as a **mixed-precision** engine via
+`build_gfpgan_fp16_engine.py`: a naive `--fp16` GFPGAN blows up its StyleGAN modulated
+convs (a grey halo around the pasted-back face), so the style_conv/to_rgb layers are kept
+FP32 and the rest run FP16. That is numerically identical to the FP32 engine (PSNR ~58 dB)
+while cutting the restoration stage ~3 ms (≈28.6 → 31 FPS on an RTX 4090).
+
+The mixed build needs the **TensorRT 10.x python wheel** on `python3` (ships in the TRT
+tarball under `python/`, e.g. `pip install /usr/local/tensorrt/python/tensorrt-10.*-cp3*-*.whl`).
+If you can't set that up, run `GFPGAN_FP32=1 bash ./build_facefusion_engines.sh ...` to fall
+back to a plain FP32 GFPGAN engine. Engines are GPU/TensorRT-version specific — rebuild them
+if you change GPU or TensorRT version.
 
 ## 4. Run
 

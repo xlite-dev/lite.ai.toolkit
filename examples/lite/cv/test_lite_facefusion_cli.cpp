@@ -12,13 +12,17 @@
 #include "lite/lite.h"
 #include <iostream>
 #include <string>
+#include <fstream>
 
 // Default engine filenames expected inside <engine_dir>.
 static const char *kFaceDetectEngine     = "yoloface_8n_fp16.engine";
 static const char *kFaceLandmarksEngine  = "2dfan4_fp16.engine";
 static const char *kFaceRecognizerEngine = "arcface_w600k_r50_fp16.engine";
 static const char *kFaceSwapEngine       = "inswapper_128_fp16.engine";
-static const char *kFaceRestoreEngine    = "gfpgan_1.4_fp32.engine";
+// Mixed-precision GFPGAN (style layers FP32, rest FP16) — clean + ~3 ms faster than plain FP32.
+// Falls back to the plain FP32 engine name if the mixed one isn't present.
+static const char *kFaceRestoreEngine    = "gfpgan_1.4_mixed.engine";
+static const char *kFaceRestoreEngineFp32 = "gfpgan_1.4_fp32.engine";
 
 static void usage(const char *prog)
 {
@@ -53,12 +57,19 @@ int main(int argc, char *argv[])
       (engine_dir.empty() || engine_dir.back() == '/') ? "" : "/";
   auto engine = [&](const char *name) { return engine_dir + sep + name; };
 
+  // Prefer the mixed-precision restoration engine; fall back to plain FP32 if only that exists.
+  std::string restore_engine = engine(kFaceRestoreEngine);
+  {
+    std::ifstream f(restore_engine);
+    if (!f.good()) restore_engine = engine(kFaceRestoreEngineFp32);
+  }
+
   auto pipeline = lite::trt::cv::face::swap::FaceFusionPipeLine(
       engine(kFaceDetectEngine),
       engine(kFaceLandmarksEngine),
       engine(kFaceRecognizerEngine),
       engine(kFaceSwapEngine),
-      engine(kFaceRestoreEngine));
+      restore_engine);
 
   pipeline.detect(source_img, src_idx, target_img, tgt_idx, output_img);
   std::cout << "[FaceFusion] wrote: " << output_img << std::endl;
