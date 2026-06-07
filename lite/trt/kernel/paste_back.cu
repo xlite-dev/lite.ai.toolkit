@@ -50,7 +50,8 @@ __global__ void paste_back_fused_kernel(const unsigned char* temp,
                                         const float* mask,
                                         const float* M,
                                         unsigned char* out,
-                                        int W, int H, int Cw, int Ch) {
+                                        int W, int H, int Cw, int Ch,
+                                        float blend_alpha) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
     if (x >= W || y >= H) return;
@@ -64,6 +65,9 @@ __global__ void paste_back_fused_kernel(const unsigned char* temp,
     // pixels outside the crop get mask=0 and just copy temp (matches CPU BORDER_CONSTANT 0)
     float m = bilinear1(mask, Cw, Ch, u, v);
     m = fminf(fmaxf(m, 0.f), 1.f);
+    // fold the face-enhancer blend (result = temp*(1-a*mask) + crop*(a*mask)); a=1 -> plain paste,
+    // a=0.8 -> restoration's blend_frame(target,0.2 / paste,0.8) collapsed into the mask.
+    m *= blend_alpha;
 
     if (m > 0.f) {
         float w = 1.f - m;

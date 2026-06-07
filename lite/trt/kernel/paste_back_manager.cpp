@@ -124,7 +124,8 @@ cv::Mat PasteBackGPU::paste_back(const cv::Mat& temp_vision_frame,
                                  const cv::Mat& crop_vision_frame,
                                  const cv::Mat& crop_mask,
                                  const cv::Mat& affine_matrix,
-                                 cudaStream_t stream) {
+                                 cudaStream_t stream,
+                                 float blend_alpha) {
     // normalize temp to a contiguous BGR uint8 frame, then H2D it into d_temp_
     cv::Mat temp = temp_vision_frame;
     if (temp.type() != CV_8UC3) temp.convertTo(temp, CV_8UC3);
@@ -144,21 +145,22 @@ cv::Mat PasteBackGPU::paste_back(const cv::Mat& temp_vision_frame,
     std::memcpy(h_temp_pinned_, temp.data, temp_bytes);
     cudaMemcpyAsync(d_temp_, h_temp_pinned_, temp_bytes, cudaMemcpyHostToDevice, stream);
 
-    return run(d_temp_, W, H, crop_vision_frame, crop_mask, affine_matrix, stream);
+    return run(d_temp_, W, H, crop_vision_frame, crop_mask, affine_matrix, stream, blend_alpha);
 }
 
 cv::Mat PasteBackGPU::paste_back(const unsigned char* d_temp, int W, int H,
                                  const cv::Mat& crop_vision_frame,
                                  const cv::Mat& crop_mask,
                                  const cv::Mat& affine_matrix,
-                                 cudaStream_t stream) {
+                                 cudaStream_t stream,
+                                 float blend_alpha) {
     // temp is already on the device — no H2D for the full frame.
-    return run(d_temp, W, H, crop_vision_frame, crop_mask, affine_matrix, stream);
+    return run(d_temp, W, H, crop_vision_frame, crop_mask, affine_matrix, stream, blend_alpha);
 }
 
 cv::Mat PasteBackGPU::run(const unsigned char* d_temp, int W, int H,
                           const cv::Mat& crop_vision_frame, const cv::Mat& crop_mask,
-                          const cv::Mat& affine_matrix, cudaStream_t stream) {
+                          const cv::Mat& affine_matrix, cudaStream_t stream, float blend_alpha) {
     cv::Mat crop = crop_vision_frame.isContinuous() ? crop_vision_frame : crop_vision_frame.clone();
     cv::Mat mask = crop_mask.isContinuous() ? crop_mask : crop_mask.clone();
 
@@ -183,7 +185,7 @@ cv::Mat PasteBackGPU::run(const unsigned char* d_temp, int W, int H,
     dim3 block(16, 16);
     dim3 grid((W + block.x - 1) / block.x, (H + block.y - 1) / block.y);
     paste_back_fused_kernel<<<grid, block, 0, stream>>>(
-        d_temp, d_crop_, d_mask_, d_affine_, d_out_, W, H, Cw, Ch);
+        d_temp, d_crop_, d_mask_, d_affine_, d_out_, W, H, Cw, Ch, blend_alpha);
 
     cudaMemcpyAsync(h_out_pinned_, d_out_, out_bytes, cudaMemcpyDeviceToHost, stream);
     cudaStreamSynchronize(stream);

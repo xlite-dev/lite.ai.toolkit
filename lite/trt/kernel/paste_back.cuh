@@ -19,6 +19,7 @@ __global__ void paste_back_fused_kernel(const unsigned char* temp,
                                         const float* mask,
                                         const float* M,
                                         unsigned char* out,
-                                        int W, int H, int Cw, int Ch);
+                                        int W, int H, int Cw, int Ch,
+                                        float blend_alpha = 1.0f);
 
 #endif // PASTE_BACK_CUH

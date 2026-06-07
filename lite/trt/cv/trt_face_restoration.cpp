@@ -12,8 +12,6 @@ using trtcv::TRTFaceFusionFaceRestoration;
 cv::Mat TRTFaceFusionFaceRestoration::restore(cv::Mat &face_swap_image,
                                               std::vector<cv::Point2f> &target_landmarks_5,
                                               lite::bench::Profiler *prof) {
-    auto ori_image = face_swap_image.clone();
-
     cv::Mat affine_matrix;
     cv::Mat box_mask;
 
@@ -80,18 +78,14 @@ cv::Mat TRTFaceFusionFaceRestoration::restore(cv::Mat &face_swap_image,
         // aliases transposed_data (alive for the rest of this scope, i.e. through paste_back)
         cv::Mat mat(height, width, CV_32FC3, transposed_data.data());
 
-        cv::Mat paste_frame;
         {
-            // GPU fused: inverse-mapping sampling + blend in one kernel. temp frame is read
-            // straight from the device-resident input_frame_ (no full-frame H2D here).
-            LITE_CPU_SCOPE_OPT(prof, "  paste_back");
-            paste_frame = paste_back_gpu_.paste_back(
+            // GPU fused: inverse-mapping sampling + paste + face-enhancer blend in ONE kernel.
+            // temp frame is read straight from the device-resident input_frame_ (no full-frame
+            // H2D). blend_alpha=0.8 folds the old CPU blend_frame(target 0.2 / paste 0.8) in.
+            LITE_CPU_SCOPE_OPT(prof, "  paste_back+blend");
+            dst_image = paste_back_gpu_.paste_back(
                     input_frame_.data(), input_frame_.width(), input_frame_.height(),
-                    mat, box_mask, affine_matrix, stream);
-        }
-        {
-            LITE_CPU_SCOPE_OPT(prof, "  blend");
-            dst_image = face_utils::blend_frame(ori_image, paste_frame);
+                    mat, box_mask, affine_matrix, stream, /*blend_alpha=*/0.8f);
         }
     }
 
