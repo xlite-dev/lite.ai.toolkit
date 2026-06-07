@@ -133,8 +133,13 @@ void TRTYoloFaceV8::detect(const cv::Mat &mat, std::vector<lite::types::Boxf> &b
     ratio_height = (float)mat.rows / temp_image.rows;
     ratio_width  = (float)mat.cols / temp_image.cols;
     cv::Mat input_img;
+    // BORDER_ISOLATED: when `mat` is a ROI/submatrix of a larger image and no resize
+    // happened (temp_image == mat), plain copyMakeBorder would pull the parent image's
+    // pixels (outside the ROI) into the pad region instead of the constant. Isolating the
+    // ROI restores the old clone()-based behavior.
     cv::copyMakeBorder(temp_image, input_img, 0, input_height - temp_image.rows,
-                       0, input_width - temp_image.cols, cv::BORDER_CONSTANT, 0);
+                       0, input_width - temp_image.cols,
+                       cv::BORDER_CONSTANT | cv::BORDER_ISOLATED, 0);
 
     // 2. GPU-fused normalize + BGR HWC->CHW straight into the inference input buffer
     //    (replaces CPU split / 3x convertTo / merge / create_tensor + the separate float H2D).
