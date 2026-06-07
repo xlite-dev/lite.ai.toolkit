@@ -11,6 +11,8 @@
 #include "lite/trt/kernel/face_swap_postproces_manager.h"
 #include "lite/trt/kernel/paste_back_manager.h"
 #include "lite/trt/kernel/device_frame.h"
+#include "lite/trt/kernel/warp_affine_npp.h"
+#include "lite/trt/kernel/face_restoration_preprocess_manager.h"
 
 namespace trtcv{
     class LITE_EXPORTS TRTFaceFusionFaceSwap : BasicTRTHandler{
@@ -23,14 +25,13 @@ namespace trtcv{
             box_mask_ = face_utils::create_static_box_mask(std::vector<float>{128.0f, 128.0f});
         };
     private:
-        void preprocess(cv::Mat &target_face,std::vector<float> source_image_embeding,std::vector<cv::Point2f> target_landmark_5,
-                        std::vector<float> &processed_source_embeding,cv::Mat &preprocessed_mat);
-
-    private:
         cv::Mat affine_martix;
         std::vector<float> model_matrix_;   // loaded once in ctor (was load_npy every frame)
         cv::Mat box_mask_;                  // cached static 128 box mask (was rebuilt every frame)
         PasteBackGPU paste_back_gpu_;   // GPU-fused paste-back, reused device buffers (same as restoration)
+        WarpAffineNpp warp_npp_;            // GPU (NPP) affine warp for the 128 crop (was CPU warpAffine)
+        FaceRestorePreprocessGPU preprocess_gpu_;  // fused bgr2rgb+/255+CHW straight into buffers[0]
+        DeviceFrame target_dev_;            // target frame uploaded ONCE; shared by warp + paste-back
     public:
         void detect(cv::Mat &target_image,std::vector<float> source_face_embeding,std::vector<cv::Point2f> target_landmark_5,
                     cv::Mat &face_swap_image);

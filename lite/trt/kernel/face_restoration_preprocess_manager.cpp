@@ -17,7 +17,8 @@ void FaceRestorePreprocessGPU::ensure_capacity(size_t bytes) {
     }
 }
 
-void FaceRestorePreprocessGPU::run(const cv::Mat& crop_bgr_u8, float* d_out, cudaStream_t stream) {
+void FaceRestorePreprocessGPU::run(const cv::Mat& crop_bgr_u8, float* d_out, cudaStream_t stream,
+                                   float scale, float bias) {
     cv::Mat c = crop_bgr_u8;
     if (c.type() != CV_8UC3) c.convertTo(c, CV_8UC3);
     if (!c.isContinuous()) c = c.clone();
@@ -31,15 +32,16 @@ void FaceRestorePreprocessGPU::run(const cv::Mat& crop_bgr_u8, float* d_out, cud
 
     dim3 block(16, 16);
     dim3 grid((W + block.x - 1) / block.x, (H + block.y - 1) / block.y);
-    face_restoration_preprocess_kernel<<<grid, block, 0, stream>>>(d_crop_, d_out, H, W);
+    face_restoration_preprocess_kernel<<<grid, block, 0, stream>>>(d_crop_, d_out, H, W, scale, bias);
 
     cudaStreamSynchronize(stream);
 }
 
 void FaceRestorePreprocessGPU::run_device(const unsigned char* d_crop, int H, int W,
-                                          float* d_out, cudaStream_t stream) {
+                                          float* d_out, cudaStream_t stream,
+                                          float scale, float bias) {
     dim3 block(16, 16);
     dim3 grid((W + block.x - 1) / block.x, (H + block.y - 1) / block.y);
-    face_restoration_preprocess_kernel<<<grid, block, 0, stream>>>(d_crop, d_out, H, W);
+    face_restoration_preprocess_kernel<<<grid, block, 0, stream>>>(d_crop, d_out, H, W, scale, bias);
     cudaStreamSynchronize(stream);
 }
