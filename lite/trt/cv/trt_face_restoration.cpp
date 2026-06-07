@@ -58,15 +58,17 @@ cv::Mat TRTFaceFusionFaceRestoration::restore(cv::Mat &face_swap_image,
     cv::Mat dst_image;
     {
         LITE_CPU_SCOPE_OPT(prof, "postprocess");
-        std::vector<unsigned char> transposed_data(1 * 3 * 512 * 512);
-        launch_face_restoration_postprocess(
-                static_cast<float *>(buffers[1]), transposed_data.data(), 3, 512, 512);
-        std::vector<float> transposed_data_float(transposed_data.begin(), transposed_data.end());
-        cudaStreamSynchronize(stream);
-
-        int height = 512, width = 512;
-        cv::Mat mat(height, width, CV_32FC3, transposed_data_float.data());
-        cv::cvtColor(mat, mat, cv::COLOR_RGB2BGR);
+        const int height = 512, width = 512;
+        std::vector<float> transposed_data(1 * 3 * 512 * 512);
+        {
+            // GPU kernel writes HWC, BGR, float[0,255] straight into transposed_data,
+            // folding the old CPU uint8->float conversion + cv::cvtColor(RGB2BGR).
+            LITE_CPU_SCOPE_OPT(prof, "  transpose+dl");
+            launch_face_restoration_postprocess(
+                    static_cast<float *>(buffers[1]), transposed_data.data(), 3, 512, 512);
+        }
+        // aliases transposed_data (alive for the rest of this scope, i.e. through paste_back)
+        cv::Mat mat(height, width, CV_32FC3, transposed_data.data());
 
         cv::Mat paste_frame;
         {
@@ -75,7 +77,10 @@ cv::Mat TRTFaceFusionFaceRestoration::restore(cv::Mat &face_swap_image,
             LITE_CPU_SCOPE_OPT(prof, "  paste_back");
             paste_frame = paste_back_gpu_.paste_back(ori_image, mat, box_mask, affine_matrix, stream);
         }
-        dst_image = face_utils::blend_frame(ori_image, paste_frame);
+        {
+            LITE_CPU_SCOPE_OPT(prof, "  blend");
+            dst_image = face_utils::blend_frame(ori_image, paste_frame);
+        }
     }
 
     return dst_image;

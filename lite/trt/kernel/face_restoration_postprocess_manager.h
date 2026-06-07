@@ -11,7 +11,7 @@
 
 void launch_face_restoration_postprocess(
         float* trt_outputs,
-        unsigned char* output_final,
+        float* output_final,        // HWC, BGR, float [0,255]
         int channel,
         int height,
         int width
