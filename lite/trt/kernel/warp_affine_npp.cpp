@@ -97,3 +97,26 @@ const unsigned char* WarpAffineNpp::warp_to_device(const cv::Mat& frame_bgr_u8,
                           aCoeffs, NPPI_INTER_LINEAR);
     return d_dst_;
 }
+
+const unsigned char* WarpAffineNpp::warp_device_to_device(const unsigned char* d_frame,
+                                                         int SW, int SH,
+                                                         const cv::Mat& affine_2x3,
+                                                         int out_size, cudaStream_t stream) {
+    const int DW = out_size, DH = out_size;
+    const size_t dst_bytes = static_cast<size_t>(DW) * DH * 3;
+    ensure(0, dst_bytes);   // src is the caller's device frame; only the dst buffer is ours
+
+    cudaMemsetAsync(d_dst_, 0, dst_bytes, stream);
+
+    double aCoeffs[2][3];
+    fill_coeffs(affine_2x3, aCoeffs);
+
+    NppiSize srcSize{SW, SH};
+    NppiRect srcROI{0, 0, SW, SH};
+    NppiRect dstROI{0, 0, DW, DH};
+    nppSetStream(stream);
+    nppiWarpAffine_8u_C3R(d_frame, srcSize, SW * 3, srcROI,
+                          d_dst_, DW * 3, dstROI,
+                          aCoeffs, NPPI_INTER_LINEAR);
+    return d_dst_;
+}

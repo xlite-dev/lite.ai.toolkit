@@ -37,11 +37,18 @@ cv::Mat TRTFaceFusionFaceRestoration::restore(cv::Mat &face_swap_image,
         }
 
         {
-            // GPU NPP warp -> device crop, then fused bgr2rgb+normalize+HWC->CHW straight into the
-            // inference input buffer (buffers[0]). The crop never leaves the GPU between the two.
+            // Upload the input frame to the device ONCE; both the NPP warp (here) and the
+            // paste_back (below) read it straight from device memory — no second full-frame H2D.
+            LITE_CPU_SCOPE_OPT(prof, "  upload");
+            input_frame_.upload(face_swap_image, stream);
+        }
+        {
+            // GPU NPP warp (reads the device-resident frame) -> device crop, then fused
+            // bgr2rgb+normalize+HWC->CHW straight into the inference input buffer (buffers[0]).
             LITE_CPU_SCOPE_OPT(prof, "  warp+to_chw(gpu)");
-            const unsigned char *d_crop = warp_npp_.warp_to_device(
-                    face_swap_image, affine_matrix, 512, stream);
+            const unsigned char *d_crop = warp_npp_.warp_device_to_device(
+                    input_frame_.data(), input_frame_.width(), input_frame_.height(),
+                    affine_matrix, 512, stream);
             preprocess_gpu_.run_device(d_crop, 512, 512, static_cast<float *>(buffers[0]), stream);
         }
     }
@@ -75,10 +82,12 @@ cv::Mat TRTFaceFusionFaceRestoration::restore(cv::Mat &face_swap_image,
 
         cv::Mat paste_frame;
         {
-            // GPU fused version: inverse-mapping sampling + blend in one kernel, reused
-            // device buffers, pinned + async copies (replaces the CPU warpAffine bottleneck).
+            // GPU fused: inverse-mapping sampling + blend in one kernel. temp frame is read
+            // straight from the device-resident input_frame_ (no full-frame H2D here).
             LITE_CPU_SCOPE_OPT(prof, "  paste_back");
-            paste_frame = paste_back_gpu_.paste_back(ori_image, mat, box_mask, affine_matrix, stream);
+            paste_frame = paste_back_gpu_.paste_back(
+                    input_frame_.data(), input_frame_.width(), input_frame_.height(),
+                    mat, box_mask, affine_matrix, stream);
         }
         {
             LITE_CPU_SCOPE_OPT(prof, "  blend");

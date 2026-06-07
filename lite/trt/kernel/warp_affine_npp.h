@@ -26,6 +26,13 @@ public:
     const unsigned char* warp_to_device(const cv::Mat& frame_bgr_u8, const cv::Mat& affine_2x3,
                                         int out_size, cudaStream_t stream = nullptr);
 
+    // Fully device-resident: source frame is ALREADY on the device (e.g. a DeviceFrame), so no
+    // H2D at all — NPP reads d_frame directly and warps into the internal device buffer, returning
+    // the device crop pointer. SW/SH are the source frame dimensions.
+    const unsigned char* warp_device_to_device(const unsigned char* d_frame, int SW, int SH,
+                                               const cv::Mat& affine_2x3, int out_size,
+                                               cudaStream_t stream = nullptr);
+
 private:
     void ensure(size_t src_bytes, size_t dst_bytes);
     unsigned char* d_src_ = nullptr;

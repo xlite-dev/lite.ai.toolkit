@@ -13,6 +13,7 @@
 #include "lite/trt/kernel/bgr2rgb_manager.h"
 #include "lite/trt/kernel/paste_back_manager.h"
 #include "lite/trt/kernel/warp_affine_npp.h"
+#include "lite/trt/kernel/device_frame.h"
 
 // Forward declaration for benchmark timing; library passes nullptr by default (zero overhead)
 namespace lite { namespace bench { class Profiler; } }
@@ -35,6 +36,7 @@ namespace trtcv{
         PasteBackGPU paste_back_gpu_;            // GPU fused paste_back, reuses device buffers
         FaceRestorePreprocessGPU preprocess_gpu_; // GPU fused bgr2rgb+normalize+CHW into input buffer
         WarpAffineNpp warp_npp_;                  // GPU (NPP) affine warp; crop stays device-resident
+        DeviceFrame input_frame_;                 // input frame uploaded once, shared by warp + paste_back
         cv::Mat box_mask_cache_;                 // static box mask is size-only; compute once and reuse
 
     };

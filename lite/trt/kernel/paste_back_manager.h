@@ -26,9 +26,22 @@ public:
                        const cv::Mat& affine_matrix,       // 2x3, original->crop
                        cudaStream_t stream = nullptr);
 
+    // Device-resident temp: the full frame is ALREADY on the device (e.g. a DeviceFrame), so the
+    // temp H2D is skipped — the kernel reads d_temp directly. crop/mask/affine still come from host.
+    cv::Mat paste_back(const unsigned char* d_temp, int W, int H,   // device BGR uint8 full frame
+                       const cv::Mat& crop_vision_frame,
+                       const cv::Mat& crop_mask,
+                       const cv::Mat& affine_matrix,
+                       cudaStream_t stream = nullptr);
+
 private:
     void ensure_capacity(size_t temp_bytes, size_t crop_bytes,
                          size_t mask_bytes, size_t out_bytes);
+    // Shared tail: crop/mask/affine H2D, kernel into d_out_, D2H result. d_temp is the kernel's
+    // full-frame input (either d_temp_ after an H2D, or a caller-provided device pointer).
+    cv::Mat run(const unsigned char* d_temp, int W, int H,
+                const cv::Mat& crop_vision_frame, const cv::Mat& crop_mask,
+                const cv::Mat& affine_matrix, cudaStream_t stream);
 
     unsigned char* d_temp_ = nullptr;
     unsigned char* d_out_  = nullptr;
