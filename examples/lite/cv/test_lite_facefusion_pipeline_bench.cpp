@@ -54,11 +54,16 @@ int main(int argc, char *argv[]) {
   }
   std::cout << "[bench] source=" << source_img << " target=" << target_img
             << "\n[bench] warmup=" << warmup << " iters=" << iters
-            << "  (compute-only: imread/imwrite excluded)" << std::endl;
+            << "  (compute-only, video-style: prepare_source once + per-frame process)" << std::endl;
+
+  // Video / server use case: the SOURCE face is fixed, so prepare it ONCE and then time only
+  // the per-frame process(target). This is what the source-embedding cache buys — the loop no
+  // longer re-runs detect_src / landmark_src / recognizer every frame.
+  pipeline.prepare_source(src, 0);
 
   // Warmup (lazy engine/context init, cudnn autotune) — excluded from stats.
   for (int i = 0; i < warmup; ++i)
-    pipeline.detect(src, 0, tgt, 0);
+    pipeline.process(tgt, 0);
 
   lite::bench::Profiler prof;
   cv::Mat out;
@@ -73,11 +78,11 @@ int main(int argc, char *argv[]) {
     }
     lite::bench::CpuTimer t;
     t.start();
-    out = pipeline.detect(src, 0, tgt, 0, &prof);
+    out = pipeline.process(tgt, 0, &prof);
     prof.tick(t.stop_ms());
   }
 
-  prof.report("FaceFusion pipeline (per-stage, compute-only)");
+  prof.report("FaceFusion pipeline (per-frame, source cached)");
   prof.to_csv(csv_path);
   if (!out.empty()) {
     cv::imwrite(out_path, out);   // save one result (outside the timed loop) for visual check

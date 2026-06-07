@@ -34,18 +34,14 @@ TRTFaceFusionPipeLine::TRTFaceFusionPipeLine(const std::string &face_detect_engi
     face_restoration = std::make_unique<TRTFaceFusionFaceRestoration>(face_restoration_engine_path,1);
 }
 
-// Compute-only core: in-memory images in, restored frame out. NO disk I/O.
-// Per-stage timing is opt-in via prof (LITE_CPU_SCOPE_OPT is zero-overhead when null);
-// each stage returns a host-visible result, so CPU-side wall-clock timing is accurate.
-cv::Mat TRTFaceFusionPipeLine::detect(const cv::Mat &source_image, int src_index,
-                                      const cv::Mat &target_image, int target_index,
-                                      lite::bench::Profiler *prof) {
+// Run the SOURCE branch once (detect -> landmark -> recognize) and cache its embedding,
+// so per-frame process() only has to handle the target. NO disk I/O. Per-stage timing is
+// opt-in via prof (LITE_CPU_SCOPE_OPT is zero-overhead when null).
+void TRTFaceFusionPipeLine::prepare_source(const cv::Mat &source_image, int src_index,
+                                           lite::bench::Profiler *prof) {
     if (source_image.empty())
         throw std::runtime_error("[FaceFusion] source image is empty");
-    if (target_image.empty())
-        throw std::runtime_error("[FaceFusion] target image is empty");
 
-    // ---- source: detect -> landmarks -> recognizer -> embedding ----
     cv::Mat img_bgr = source_image.clone();   // sub-models take a non-const cv::Mat&
     cv::Mat img_bgr_src = img_bgr.clone();
 
@@ -68,11 +64,20 @@ cv::Mat TRTFaceFusionPipeLine::detect(const cv::Mat &source_image, int src_index
     { LITE_CPU_SCOPE_OPT(prof, "landmark_src");
       face_landmarks->detect(img_bgr, src_final_boxes[src_pick], face_landmark_5of68); }
 
-    std::vector<float> source_image_embeding;
     { LITE_CPU_SCOPE_OPT(prof, "recognizer");
-      face_recognizer->detect(img_bgr_src, face_landmark_5of68, source_image_embeding); }
+      face_recognizer->detect(img_bgr_src, face_landmark_5of68, source_embedding_); }
+    source_ready_ = true;
+}
 
-    // ---- target: detect -> landmarks ----
+// Per target frame: detect + landmark on the target, swap the cached source face, restore.
+// NO disk I/O. Requires a prior prepare_source().
+cv::Mat TRTFaceFusionPipeLine::process(const cv::Mat &target_image, int target_index,
+                                       lite::bench::Profiler *prof) {
+    if (!source_ready_)
+        throw std::runtime_error("[FaceFusion] process() called before prepare_source()");
+    if (target_image.empty())
+        throw std::runtime_error("[FaceFusion] target image is empty");
+
     cv::Mat target_img_bgr = target_image.clone();
 
     std::vector<lite::types::Boxf> target_detected_boxes;
@@ -97,12 +102,21 @@ cv::Mat TRTFaceFusionPipeLine::detect(const cv::Mat &source_image, int src_index
     // ---- swap + restore (restore() returns the frame; no disk write) ----
     cv::Mat face_swap_image;
     { LITE_CPU_SCOPE_OPT(prof, "swap");
-      face_swap->detect(target_img_bgr, source_image_embeding, target_face_landmark_5of68, face_swap_image); }
+      face_swap->detect(target_img_bgr, source_embedding_, target_face_landmark_5of68, face_swap_image); }
 
     cv::Mat result;
     { LITE_CPU_SCOPE_OPT(prof, "restoration");
       result = face_restoration->restore(face_swap_image, target_face_landmark_5of68, nullptr); }
     return result;
+}
+
+// Convenience one-shot: prepare the source then process the target (recomputes the source
+// embedding on every call — for video, call prepare_source() once and process() per frame).
+cv::Mat TRTFaceFusionPipeLine::detect(const cv::Mat &source_image, int src_index,
+                                      const cv::Mat &target_image, int target_index,
+                                      lite::bench::Profiler *prof) {
+    prepare_source(source_image, src_index, prof);
+    return process(target_image, target_index, prof);
 }
 
 // Convenience wrapper: file paths in, result written to disk. Thin layer over the

@@ -35,9 +35,23 @@ namespace trtcv{
         std::unique_ptr<trt_yolofacev8_mt> face_detect_mt;
         std::unique_ptr<trt_face_68landmarks_mt> face_landmarks_mt;
 
+        std::vector<float> source_embedding_;   // cached by prepare_source()
+        bool source_ready_ = false;
+
     public:
-        // Compute-only, in-memory: decoded images in -> restored frame out, no disk I/O.
-        // This is the path benchmarks and real (video / server) use should call.
+        // ---- Split API (the right shape for video / server: the SOURCE face is usually
+        // fixed, so its embedding is computed ONCE and reused across many target frames). ----
+
+        // Run detect + landmark + recognize on the source image once; cache its embedding.
+        void prepare_source(const cv::Mat &source_image, int src_index,
+                            lite::bench::Profiler *prof = nullptr);
+
+        // Per target frame: swap the cached source face onto the target and restore. No disk
+        // I/O. Requires a prior prepare_source().
+        cv::Mat process(const cv::Mat &target_image, int target_index,
+                        lite::bench::Profiler *prof = nullptr);
+
+        // Convenience one-shot: prepare_source() + process() (recomputes source every call).
         cv::Mat detect(const cv::Mat &source_image, int src_index,
                        const cv::Mat &target_image, int target_index,
                        lite::bench::Profiler *prof = nullptr);
