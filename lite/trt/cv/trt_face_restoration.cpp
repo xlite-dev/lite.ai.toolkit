@@ -74,30 +74,25 @@ cv::Mat TRTFaceFusionFaceRestoration::restore_core(const DeviceFrame &frame,
         cudaStreamSynchronize(stream);
     }
 
-    // ---------------- postprocess: transpose kernel + cvtColor + paste_back + blend ----------------
+    // ---------------- postprocess: GPU transpose -> device crop -> paste+blend (all device) -------
     cv::Mat dst_image;
     {
         LITE_CPU_SCOPE_OPT(prof, "postprocess");
-        const int height = 512, width = 512;
-        std::vector<float> transposed_data(1 * 3 * 512 * 512);
+        const float *d_crop = nullptr;
         {
-            // GPU kernel writes HWC, BGR, float[0,255] straight into transposed_data,
-            // folding the old CPU uint8->float conversion + cv::cvtColor(RGB2BGR).
-            LITE_CPU_SCOPE_OPT(prof, "  transpose+dl");
-            launch_face_restoration_postprocess(
-                    static_cast<float *>(buffers[1]), transposed_data.data(), 3, 512, 512);
+            // GPU kernel writes HWC BGR float[0,255] into a reusable DEVICE buffer (no D2H, no
+            // per-call cudaMalloc) — fed straight to paste-back, so the 512 crop never hits host.
+            LITE_CPU_SCOPE_OPT(prof, "  transpose(gpu)");
+            d_crop = postproc_gpu_.run(static_cast<float *>(buffers[1]), 3, 512, 512, stream);
         }
-        // aliases transposed_data (alive for the rest of this scope, i.e. through paste_back)
-        cv::Mat mat(height, width, CV_32FC3, transposed_data.data());
-
         {
             // GPU fused: inverse-mapping sampling + paste + face-enhancer blend in ONE kernel.
-            // temp frame is read straight from the device-resident `frame` (no full-frame
-            // H2D). blend_alpha=0.8 folds the old CPU blend_frame(target 0.2 / paste 0.8) in.
+            // Both the temp frame and the crop are device-resident; only the box mask is H2D'd.
+            // blend_alpha=0.8 folds the old CPU blend_frame(target 0.2 / paste 0.8) in.
             LITE_CPU_SCOPE_OPT(prof, "  paste_back+blend");
             dst_image = paste_back_gpu_.paste_back(
                     frame.data(), frame.width(), frame.height(),
-                    mat, box_mask, affine_matrix, stream, /*blend_alpha=*/0.8f);
+                    d_crop, 512, 512, box_mask, affine_matrix, stream, /*blend_alpha=*/0.8f);
         }
     }
 

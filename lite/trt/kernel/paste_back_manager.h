@@ -39,6 +39,15 @@ public:
                        cudaStream_t stream = nullptr,
                        float blend_alpha = 1.0f);
 
+    // Both temp AND crop already on device (e.g. swap's output frame + restoration's postproc crop):
+    // only mask/affine are H2D'd. d_crop is HWC interleaved BGR float[0,255], Cw x Ch.
+    cv::Mat paste_back(const unsigned char* d_temp, int W, int H,
+                       const float* d_crop, int Cw, int Ch,
+                       const cv::Mat& crop_mask,
+                       const cv::Mat& affine_matrix,
+                       cudaStream_t stream = nullptr,
+                       float blend_alpha = 1.0f);
+
     // Device-OUTPUT: paste straight into a DeviceFrame (no D2H) so the result stays GPU-resident
     // for the next stage. Host-temp variant (uploads temp) and device-temp variant.
     void paste_back_to_device(const cv::Mat& temp_vision_frame,
@@ -53,17 +62,18 @@ public:
 private:
     void ensure_capacity(size_t temp_bytes, size_t crop_bytes,
                          size_t mask_bytes, size_t out_bytes);
-    // Uploads temp into d_temp_ (grows it as needed) and returns the device pointer.
+    // Upload temp/crop into the internal device buffers (grown as needed); return the device ptr.
     const unsigned char* upload_temp(const cv::Mat& temp_vision_frame, cudaStream_t stream);
-    // Core: crop/mask/affine H2D + kernel into d_out (no D2H). d_temp is the full-frame input
-    // (d_temp_ after an H2D, or a caller device pointer); d_out is the kernel's output buffer.
+    const float* upload_crop(const cv::Mat& crop_vision_frame, cudaStream_t stream);
+    // Core: mask/affine H2D + kernel into d_out (no D2H). d_temp and d_crop are device inputs
+    // (uploaded, or caller-provided); d_out is the kernel's output buffer (null -> internal d_out_).
     void run_core(const unsigned char* d_temp, int W, int H,
-                  const cv::Mat& crop_vision_frame, const cv::Mat& crop_mask,
+                  const float* d_crop, int Cw, int Ch, const cv::Mat& crop_mask,
                   const cv::Mat& affine_matrix, cudaStream_t stream, float blend_alpha,
                   unsigned char* d_out);
     // run_core into d_out_ then D2H -> a fresh host Mat.
     cv::Mat run(const unsigned char* d_temp, int W, int H,
-                const cv::Mat& crop_vision_frame, const cv::Mat& crop_mask,
+                const float* d_crop, int Cw, int Ch, const cv::Mat& crop_mask,
                 const cv::Mat& affine_matrix, cudaStream_t stream, float blend_alpha);
 
     unsigned char* d_temp_ = nullptr;

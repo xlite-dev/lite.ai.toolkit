@@ -43,6 +43,7 @@ namespace trtcv{
                              lite::bench::Profiler *prof);
         PasteBackGPU paste_back_gpu_;            // GPU fused paste_back, reuses device buffers
         FaceRestorePreprocessGPU preprocess_gpu_; // GPU fused bgr2rgb+normalize+CHW into input buffer
+        FaceRestorePostprocessGPU postproc_gpu_;  // GPU transpose -> reusable device crop (no D2H)
         WarpAffineNpp warp_npp_;                  // GPU (NPP) affine warp; crop stays device-resident
         DeviceFrame input_frame_;                 // input frame uploaded once, shared by warp + paste_back
         cv::Mat box_mask_cache_;                 // static box mask is size-only; compute once and reuse
