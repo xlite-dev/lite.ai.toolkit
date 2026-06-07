@@ -18,6 +18,10 @@ public:
     // crop_bgr_u8: CV_8UC3 (e.g. 512x512). d_out: device float CHW buffer (the inference input).
     void run(const cv::Mat& crop_bgr_u8, float* d_out, cudaStream_t stream = nullptr);
 
+    // Device-resident variant: the crop is already on the GPU (e.g. NPP warp output), so skip the
+    // H2D — just launch the fused kernel reading d_crop -> d_out on `stream`. Syncs before return.
+    void run_device(const unsigned char* d_crop, int H, int W, float* d_out, cudaStream_t stream = nullptr);
+
 private:
     void ensure_capacity(size_t bytes);
 

@@ -101,9 +101,8 @@ namespace face_utils
 }
 
 
-std::pair<cv::Mat, cv::Mat>
-face_utils::warp_face_by_face_landmark_5(cv::Mat input_mat, std::vector<cv::Point2f> face_landmark_5,
-                                         unsigned int type) {
+cv::Mat
+face_utils::estimate_affine_by_landmark_5(std::vector<cv::Point2f> face_landmark_5, unsigned int type) {
 
     std::vector<cv::Point2f> current_template_select;
     if (type == face_utils::ARCFACE_112_V2)
@@ -144,6 +143,14 @@ face_utils::warp_face_by_face_landmark_5(cv::Mat input_mat, std::vector<cv::Poin
     if (affine_matrix.empty()) {
         throw std::runtime_error("Failed to estimate affine transformation");
     }
+    return affine_matrix;
+}
+
+std::pair<cv::Mat, cv::Mat>
+face_utils::warp_face_by_face_landmark_5(cv::Mat input_mat, std::vector<cv::Point2f> face_landmark_5,
+                                         unsigned int type) {
+
+    cv::Mat affine_matrix = estimate_affine_by_landmark_5(face_landmark_5, type);
 
     // 进行仿射变换
     cv::Mat crop_img;

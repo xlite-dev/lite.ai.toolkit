@@ -35,3 +35,11 @@ void FaceRestorePreprocessGPU::run(const cv::Mat& crop_bgr_u8, float* d_out, cud
 
     cudaStreamSynchronize(stream);
 }
+
+void FaceRestorePreprocessGPU::run_device(const unsigned char* d_crop, int H, int W,
+                                          float* d_out, cudaStream_t stream) {
+    dim3 block(16, 16);
+    dim3 grid((W + block.x - 1) / block.x, (H + block.y - 1) / block.y);
+    face_restoration_preprocess_kernel<<<grid, block, 0, stream>>>(d_crop, d_out, H, W);
+    cudaStreamSynchronize(stream);
+}

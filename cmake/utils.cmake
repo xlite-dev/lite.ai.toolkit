@@ -53,7 +53,8 @@ function(add_lite_ai_toolkit_shared_library version soversion)
         include(cmake/tensorrt.cmake)
         set(LITE_SRCS ${LITE_SRCS} ${TRT_SRCS})
         set(LITE_DEPENDENCIES ${LITE_DEPENDENCIES} cuda cudart nvinfer nvonnxparser
-                                                   nvinfer_plugin ddim_scheduler_cpp)
+                                                   nvinfer_plugin ddim_scheduler_cpp
+                                                   nppc nppig nppidei)  # NPP: GPU warp/resize
         link_directories(${CMAKE_SOURCE_DIR}/lite/bin)
     endif ()
 

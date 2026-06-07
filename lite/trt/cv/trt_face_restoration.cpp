@@ -14,17 +14,18 @@ cv::Mat TRTFaceFusionFaceRestoration::restore(cv::Mat &face_swap_image,
                                               lite::bench::Profiler *prof) {
     auto ori_image = face_swap_image.clone();
 
-    cv::Mat crop_image;
     cv::Mat affine_matrix;
     cv::Mat box_mask;
 
-    // ---------------- preprocess (CPU): warp + bgr2rgb + normalize + build tensor ----------------
+    // ---------------- preprocess: estimate affine (CPU) -> GPU warp (NPP) -> fused CHW tensor ------
     {
         LITE_CPU_SCOPE_OPT(prof, "preprocess");
         {
-            LITE_CPU_SCOPE_OPT(prof, "  warp");
-            std::tie(crop_image, affine_matrix) = face_utils::warp_face_by_face_landmark_5(
-                    face_swap_image, target_landmarks_5, face_utils::FFHQ_512);
+            // Only the affine estimate stays on the CPU; the warp itself runs on the GPU and the
+            // warped 512 crop stays device-resident (no D2H/H2D round-trip for the crop).
+            LITE_CPU_SCOPE_OPT(prof, "  estimate_affine");
+            affine_matrix = face_utils::estimate_affine_by_landmark_5(
+                    target_landmarks_5, face_utils::FFHQ_512);
         }
         {
             // the static box mask only depends on the (fixed) 512 crop size, so build it
@@ -36,10 +37,12 @@ cv::Mat TRTFaceFusionFaceRestoration::restore(cv::Mat &face_swap_image,
         }
 
         {
-            // GPU fused: bgr2rgb + normalize + HWC->CHW written straight into the inference
-            // input buffer (buffers[0]) — also removes the separate H2D below.
-            LITE_CPU_SCOPE_OPT(prof, "  to_chw(gpu)");
-            preprocess_gpu_.run(crop_image, static_cast<float *>(buffers[0]), stream);
+            // GPU NPP warp -> device crop, then fused bgr2rgb+normalize+HWC->CHW straight into the
+            // inference input buffer (buffers[0]). The crop never leaves the GPU between the two.
+            LITE_CPU_SCOPE_OPT(prof, "  warp+to_chw(gpu)");
+            const unsigned char *d_crop = warp_npp_.warp_to_device(
+                    face_swap_image, affine_matrix, 512, stream);
+            preprocess_gpu_.run_device(d_crop, 512, 512, static_cast<float *>(buffers[0]), stream);
         }
     }
 
