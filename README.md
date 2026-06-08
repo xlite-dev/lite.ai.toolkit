@@ -29,7 +29,7 @@ honestly with a reproducible benchmark harness. Welcome to 🌟 star this repo t
   taken from **78.2 ms → 17.7 ms (4.4×, 12.8 → 56.6 FPS)** on an RTX 4090 by moving paste-back and
   preprocessing into fused CUDA kernels. See [Benchmark](#benchmark) below. The rest of the pipeline
   (detect / landmark / swap, FP16) is being optimized stage by stage.
-- [lite.ai.toolkit](https://github.com/xlite-dev/lite.ai.toolkit) is mainly maintained by 🎉[@wangzijian1010](https://github.com/wangzijian1010).
+- Now, [lite.ai.toolkit](https://github.com/xlite-dev/lite.ai.toolkit) is mainly maintained by 🎉[@wangzijian1010](https://github.com/wangzijian1010).
 
 ## ⚡ Benchmark 🔥
 <div id="benchmark"></div>
