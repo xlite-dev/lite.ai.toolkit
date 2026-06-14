@@ -52,19 +52,22 @@ if you change GPU or TensorRT version.
 ```bash
 ./build/install/bin/lite_facefusion_cli \
     ~/ff_engines \
-    source.jpg \          # face to take
-    target.jpg \          # image to paste it onto
-    output.jpg            # result
+    source.jpg \
+    target.jpg \
+    output.jpg
 
 # optionally pick which detected face to use on each side (default 0 0):
 #   ... output.jpg <src_face_idx> <tgt_face_idx>
 ```
 
-That's it — `output.jpg` is the swapped + restored result.
+That's it — `output.jpg` is the swapped + restored result. `source.jpg` is the face to take,
+and `target.jpg` is the image to paste it onto.
 
 ## Performance
 
-The face-restoration stage is GPU-fused (paste-back + preprocess moved into CUDA
-kernels): **78.2 ms → 17.7 ms (4.4×)** on an RTX 4090. See the
-[Benchmark](../README.md#benchmark) section. Other stages are being optimized stage
-by stage.
+The benchmark path is video-shaped: prepare the fixed source face once, then time
+per-frame `process(target)`. On an RTX 4090, FP16 deployment, the current pipeline
+runs at **23.6 ms / frame (42.3 FPS)**. The pipeline now does one full-frame H2D
+upload for the target and one full-frame D2H download for the final result; the
+swap → restoration boundary stays GPU-resident. See the
+[Benchmark](../README.md#benchmark) section.
