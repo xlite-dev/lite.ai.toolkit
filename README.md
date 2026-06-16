@@ -160,8 +160,8 @@ GNU General Public License v3.0
 
 <a href="https://www.star-history.com/?repos=star-history%2Fstar-history%2Cxlite-dev%2Flite.ai.toolkit&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=star-history/star-history%2Cxlite-dev/lite.ai.toolkit&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=star-history/star-history%2Cxlite-dev/lite.ai.toolkit&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=star-history/star-history%2Cxlite-dev/lite.ai.toolkit&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=xlite-dev/lite.ai.toolkit&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=xlite-dev/lite.ai.toolkit&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=xlite-dev/lite.ai.toolkit&type=date&legend=top-left" />
  </picture>
 </a>
