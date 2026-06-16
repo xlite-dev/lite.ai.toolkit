@@ -9,16 +9,44 @@
 #include "lite/trt/core/trt_config.h"
 #include "lite/ort/cv/face_utils.h"
 #include "lite/trt/kernel/face_restoration_postprocess_manager.h"
+#include "lite/trt/kernel/face_restoration_preprocess_manager.h"
 #include "lite/trt/kernel/bgr2rgb_manager.h"
 #include "lite/trt/kernel/paste_back_manager.h"
+#include "lite/trt/kernel/warp_affine_npp.h"
+#include "lite/trt/kernel/device_frame.h"
+
+// Forward declaration for benchmark timing; library passes nullptr by default (zero overhead)
+namespace lite { namespace bench { class Profiler; } }
+
 namespace trtcv{
     class LITE_EXPORTS TRTFaceFusionFaceRestoration : BasicTRTHandler{
     public:
         explicit TRTFaceFusionFaceRestoration(const std::string& _trt_model_path,unsigned int _num_threads = 1) :
                 BasicTRTHandler(_trt_model_path,_num_threads){};;
     public:
-        // 这个是直接保存的
+        // writes the restored frame straight to disk
         void detect(cv::Mat &face_swap_image,std::vector<cv::Point2f > &target_landmarks_5 ,const std::string &face_enchaner_path);
+
+        // Core compute: returns the restored full frame without writing to disk; when prof is
+        // non-null, records per-stage timings (preprocess / infer / postprocess / paste_back).
+        cv::Mat restore(cv::Mat &face_swap_image, std::vector<cv::Point2f> &target_landmarks_5,
+                        lite::bench::Profiler *prof = nullptr);
+
+        // Device-pipeline variant: the input frame is ALREADY on the device (e.g. swap's output),
+        // so no upload — warp + paste read it straight from device memory.
+        cv::Mat restore(const DeviceFrame &input_frame, std::vector<cv::Point2f> &target_landmarks_5,
+                        lite::bench::Profiler *prof = nullptr);
+
+    private:
+        // shared body: estimate affine -> NPP warp (from `frame`) -> infer -> postprocess -> paste.
+        cv::Mat restore_core(const DeviceFrame &frame, std::vector<cv::Point2f> &target_landmarks_5,
+                             lite::bench::Profiler *prof);
+        PasteBackGPU paste_back_gpu_;            // GPU fused paste_back, reuses device buffers
+        FaceRestorePreprocessGPU preprocess_gpu_; // GPU fused bgr2rgb+normalize+CHW into input buffer
+        FaceRestorePostprocessGPU postproc_gpu_;  // GPU transpose -> reusable device crop (no D2H)
+        WarpAffineNpp warp_npp_;                  // GPU (NPP) affine warp; crop stays device-resident
+        DeviceFrame input_frame_;                 // input frame uploaded once, shared by warp + paste_back
+        cv::Mat box_mask_cache_;                 // static box mask is size-only; compute once and reuse
 
     };
 }

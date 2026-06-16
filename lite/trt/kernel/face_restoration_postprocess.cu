@@ -18,8 +18,8 @@ __device__ unsigned char float_to_uint8_simple(float x) {
 
 // 主kernel函数
 __global__ void face_restoration_postprocess(
-        float* input_buffer,        // 输入数据（TRT输出，CHW格式）
-        unsigned char* output_final,  // 最终输出（HWC格式，uint8）
+        float* input_buffer,        // 输入数据（TRT输出，CHW格式，RGB）
+        float* output_final,        // output: HWC, BGR, float in [0,255]
         int channel,
         int height,
         int width
@@ -28,17 +28,18 @@ __global__ void face_restoration_postprocess(
     int total_size = channel * height * width;
     if (idx >= total_size) return;
 
-    // 第一步：范围处理
+    // clamp + (x+1)/2 -> [0,1]
     float processed = process_range_single(input_buffer[idx]);
 
-    // 第二步：计算CHW中的位置
+    // CHW position
     int c = idx / (height * width);
     int h = (idx % (height * width)) / width;
     int w = idx % width;
 
-    // 第三步：计算HWC位置并转换
-    int hwc_idx = get_hwc_index(c, h, w, channel, width);
-
-    // 第四步：转换为uint8并写入输出
-    output_final[hwc_idx] = float_to_uint8_simple(processed);
+    // Write directly as HWC, BGR, float in [0,255]: this folds the old CPU uint8->float
+    // conversion AND the cv::cvtColor(RGB2BGR) into the kernel. Model channels are RGB
+    // (0,1,2) -> BGR positions (2,1,0).
+    int out_c = channel - 1 - c;
+    int hwc_idx = get_hwc_index(out_c, h, w, channel, width);
+    output_final[hwc_idx] = processed * 255.f;
 }

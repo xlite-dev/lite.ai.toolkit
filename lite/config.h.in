@@ -3,9 +3,6 @@
 
 #cmakedefine ENABLE_ONNXRUNTIME
 #cmakedefine ENABLE_TENSORRT
-#cmakedefine ENABLE_MNN
-#cmakedefine ENABLE_NCNN
-#cmakedefine ENABLE_TNN
 #cmakedefine ENABLE_ONNXRUNTIME_CUDA
 #cmakedefine ENABLE_OPENCV_VIDEOIO
 #cmakedefine ENABLE_DEBUG_STRING

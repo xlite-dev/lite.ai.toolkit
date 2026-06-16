@@ -63,41 +63,6 @@ std::vector<int> TRTYoloFaceV8::nms(std::vector<lite::types::Boxf> boxes, std::v
     return keep_inds;
 }
 
-cv::Mat TRTYoloFaceV8::normalize(cv::Mat srcimg) {
-    const int height = srcimg.rows;
-    const int width = srcimg.cols;
-    cv::Mat temp_image = srcimg.clone();
-    int input_height = input_node_dims[2];
-    int input_width = input_node_dims[3];
-
-    if (height > input_height || width > input_width)
-    {
-        const float scale = std::min((float)input_height / height, (float)input_width / width);
-        cv::Size new_size = cv::Size(int(width * scale), int(height * scale));
-        cv::resize(srcimg, temp_image, new_size);
-    }
-
-    ratio_height = (float)height / temp_image.rows;
-    ratio_width = (float)width / temp_image.cols;
-
-    cv::Mat input_img;
-    cv::copyMakeBorder(temp_image, input_img, 0, input_height - temp_image.rows,
-                       0, input_width - temp_image.cols, cv::BORDER_CONSTANT, 0);
-
-    std::vector<cv::Mat> bgrChannels(3);
-    cv::split(input_img, bgrChannels);
-    for (int c = 0; c < 3; c++)
-    {
-        bgrChannels[c].convertTo(bgrChannels[c], CV_32FC1, 1 / 128.0, -127.5 / 128.0);
-    }
-    cv::Mat normalized_image;
-    cv::merge(bgrChannels,normalized_image);
-    return normalized_image;
-
-}
-
-
-
 void TRTYoloFaceV8::generate_box(float *trt_outputs, std::vector<lite::types::Boxf> &boxes, float conf_threshold,
                                  float iou_threshold) {
 
@@ -157,30 +122,39 @@ void TRTYoloFaceV8::detect(const cv::Mat &mat, std::vector<lite::types::Boxf> &b
     }
 
 
-    // 1.normalized the input
-    cv::Mat normalized_image = normalize(mat);
+    // 1. letterbox: resize (keep aspect) + pad to the network input size, BGR uint8. Sets ratio_*.
+    const int input_height = input_node_dims[2];
+    const int input_width  = input_node_dims[3];
+    cv::Mat temp_image = mat;
+    if (mat.rows > input_height || mat.cols > input_width) {
+        const float s = std::min((float)input_height / mat.rows, (float)input_width / mat.cols);
+        cv::resize(mat, temp_image, cv::Size(int(mat.cols * s), int(mat.rows * s)));
+    }
+    ratio_height = (float)mat.rows / temp_image.rows;
+    ratio_width  = (float)mat.cols / temp_image.cols;
+    cv::Mat input_img;
+    // BORDER_ISOLATED: when `mat` is a ROI/submatrix of a larger image and no resize
+    // happened (temp_image == mat), plain copyMakeBorder would pull the parent image's
+    // pixels (outside the ROI) into the pad region instead of the constant. Isolating the
+    // ROI restores the old clone()-based behavior.
+    cv::copyMakeBorder(temp_image, input_img, 0, input_height - temp_image.rows,
+                       0, input_width - temp_image.cols,
+                       cv::BORDER_CONSTANT | cv::BORDER_ISOLATED, 0);
 
-    // 2.trans to input vector
-    std::vector<float> input;
-    trtcv::utils::transform::create_tensor(normalized_image,input,input_node_dims,trtcv::utils::transform::CHW);
+    // 2. GPU-fused normalize + BGR HWC->CHW straight into the inference input buffer
+    //    (replaces CPU split / 3x convertTo / merge / create_tensor + the separate float H2D).
+    preprocess_gpu_.run(input_img, static_cast<float*>(buffers[0]), stream);
 
     // 3. infer
-    cudaMemcpyAsync(buffers[0], input.data(), input_node_dims[0] * input_node_dims[1] * input_node_dims[2] * input_node_dims[3] * sizeof(float),
-                    cudaMemcpyHostToDevice, stream);
     bool status = trt_context->enqueueV3(stream);
-
-
     if (!status){
         std::cerr << "Failed to infer by TensorRT." << std::endl;
         return;
     }
+    cudaStreamSynchronize(stream);   // ensure the inference output (buffers[1]) is ready
 
-    std::vector<float> output(output_node_dims[0][0] * output_node_dims[0][1] * output_node_dims[0][2]);
-
-    cudaMemcpyAsync(output.data(), buffers[1], output_node_dims[0][0] * output_node_dims[0][1] * output_node_dims[0][2] * sizeof(float),
-                    cudaMemcpyDeviceToHost, stream);
-    // 4. generate box
-    generate_box(output.data(),boxes,0.45f,0.5f);
+    // 4. generate box (reads buffers[1] directly; the trt_outputs param is unused)
+    generate_box(nullptr, boxes, 0.45f, 0.5f);
 
 
 }

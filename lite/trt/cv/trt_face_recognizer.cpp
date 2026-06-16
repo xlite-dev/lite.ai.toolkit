@@ -66,9 +66,4 @@ void TRTFaceFusionFaceRecognizer::detect(cv::Mat &input_mat, std::vector<cv::Poi
 //    for (auto &val : normal_embeding) {
 //        val /= norm;
 //    }
-
-
-    std::cout<<"done!"<<std::endl;
-
-
 }

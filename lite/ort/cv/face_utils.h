@@ -27,6 +27,10 @@ namespace face_utils
     std::pair<cv::Mat, cv::Mat> warp_face_by_face_landmark_5(cv::Mat input_mat,
                                                              std::vector<cv::Point2f> face_landmark_5,unsigned int type);
 
+    // Just the affine estimate (no CPU warp) — lets the warp run on the GPU (NPP) while keeping
+    // the same 2x3 source->template matrix used by warp_face_by_face_landmark_5.
+    cv::Mat estimate_affine_by_landmark_5(std::vector<cv::Point2f> face_landmark_5, unsigned int type);
+
     std::vector<cv::Point2f> convert_face_landmark_68_to_5(const std::vector<cv::Point2f>& landmark_68);
 
     cv::Mat blend_frame(const cv::Mat &target_image, const cv::Mat &paste_frame);

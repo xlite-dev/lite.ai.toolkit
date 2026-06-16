@@ -31,16 +31,15 @@ add_definitions(-DSOURCE_PATH="${CMAKE_SOURCE_DIR}")
 
 option(ENABLE_TEST "build test examples." OFF)
 option(ENABLE_DEBUG_STRING "enable DEBUG string or not" ON)
-option(ENABLE_ONNXRUNTIME "enable ONNXRuntime engine" ON)
-option(ENABLE_TENSORRT "enable TensorRT engine" OFF)
-option(ENABLE_MNN "enable MNN engine" OFF)
-option(ENABLE_NCNN "enable NCNN engine" OFF) 
-option(ENABLE_TNN "enable TNN engine" OFF)
+option(ENABLE_ONNXRUNTIME "enable ONNXRuntime engine (kept as numerical reference + test host)" ON)
+option(ENABLE_TENSORRT "enable TensorRT engine (the maintained high-performance backend)" OFF)
 option(ENABLE_ONNXRUNTIME_CUDA "enable ONNXRuntime engine with CUDA provider" OFF) # for future use
 option(ENABLE_OPENCV_VIDEOIO "enable opencv videoio modules for detect_video apis" ON) # now, ON only
 
-if ((NOT ENABLE_ONNXRUNTIME) AND (NOT ENABLE_MNN))
-    message(FATAL_ERROR "One of ONNXRuntime/MNN Backend must be enable!")
+# As of >=0.3.2 the MNN/NCNN/TNN backends were dropped (frozen on tag `v0.2-all-backends`).
+# ONNXRuntime is kept as the numerical-reference oracle and the only backend that can build tests.
+if (NOT ENABLE_ONNXRUNTIME)
+    message(FATAL_ERROR "ONNXRuntime backend must be enabled (it hosts the test suite and numerical reference)!")
 endif()
 
 if ((NOT ENABLE_ONNXRUNTIME) AND ENABLE_TEST)
@@ -82,8 +81,5 @@ message(STATUS "      Root Path: ${CMAKE_SOURCE_DIR}")
 message(STATUS "         OpenCV: ON Version: ${OpenCV_Version}")
 message(STATUS "    ONNXRUNTIME: ${ENABLE_ONNXRUNTIME} Version: ${OnnxRuntime_Version}")
 message(STATUS "       TENSORRT: ${ENABLE_TENSORRT} Version: ${TensorRT_Version}")
-message(STATUS "            MNN: ${ENABLE_MNN} Version: ${MNN_Version}")
-message(STATUS "           NCNN: ${ENABLE_NCNN} Version: ${NCNN_Version}")
-message(STATUS "            TNN: ${ENABLE_TNN} Version: ${TNN_Version}")
 message(STATUS "        INSTALL:  ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "-------------------------- lite.ai.toolkit Configuration Summary --------------------------")
