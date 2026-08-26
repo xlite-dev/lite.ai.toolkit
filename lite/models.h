@@ -110,6 +110,7 @@
 #include "lite/ort/cv/mobile_human_matting.h"
 #include "lite/ort/cv/mobile_hair_seg.h"
 #include "lite/ort/cv/yolov6.h"
+#include "lite/ort/cv/yolo26.h"
 #include "lite/ort/cv/face_parsing_bisenet.h"
 #include "lite/ort/cv/face_parsing_bisenet_dyn.h"
 #include "lite/ort/cv/yolofacev8.h"
@@ -509,6 +510,7 @@ namespace lite
       typedef ortcv::MobileHumanMatting _ONNXMobileHumanMatting;
       typedef ortcv::MobileHairSeg _ONNXMobileHairSeg;
       typedef ortcv::YOLOv6 _ONNXYOLOv6;
+      typedef ortcv::YOLO26 _ONNXYOLO26;
       typedef ortcv::FaceParsingBiSeNet _ONNXFaceParsingBiSeNet;
       typedef ortcv::FaceParsingBiSeNetDyn _ONNXFaceParsingBiSeNetDyn;
       typedef ortcv::YoloFaceV8 _ONNXYOLOFaceNet;
@@ -563,6 +565,7 @@ namespace lite
         typedef _ONNXInsectDet InsectDet;
         typedef _ONNXYoloV5_V_6_1 YoloV5_V_6_1;
         typedef _ONNXYOLOv6 YOLOv6;
+        typedef _ONNXYOLO26 YOLO26;
       }
       // 3. face detection & facial attributes detection
       namespace face
