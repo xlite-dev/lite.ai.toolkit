@@ -2,7 +2,10 @@
 // Created by wangzijian on 11/1/24.
 //
 #include "lite/lite.h"
+
+#ifdef ENABLE_TENSORRT
 #include "lite/trt/cv/trt_face_68landmarks_mt.h"
+#endif
 
 static void test_default()
 {

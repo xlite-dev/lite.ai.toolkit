@@ -3,7 +3,9 @@
 //
 #include "lite/lite.h"
 
+#ifdef ENABLE_TENSORRT
 #include "lite/trt/cv/trt_face_restoration_mt.h"
+#endif
 
 static void test_default()
 {
