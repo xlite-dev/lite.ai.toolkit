@@ -35,9 +35,17 @@ option(ENABLE_ONNXRUNTIME_CUDA "enable ONNXRuntime engine with CUDA provider" OF
 option(ENABLE_OPENCV_VIDEOIO "enable opencv videoio modules for detect_video apis" ON) # now, ON only
 
 if (ENABLE_TENSORRT)
-    # 指定CUDA编译器
-    set(CMAKE_CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
-    set(CMAKE_CUDA_ARCHITECTURES 89) # For RTX 20xx series
+    set(CMAKE_CUDA_COMPILER "/usr/local/cuda/bin/nvcc"
+        CACHE FILEPATH "Path to the CUDA compiler")
+
+    if (NOT EXISTS "${CMAKE_CUDA_COMPILER}")
+        message(FATAL_ERROR
+                "CUDA compiler not found: ${CMAKE_CUDA_COMPILER}. "
+                "Set it with -DCMAKE_CUDA_COMPILER=/path/to/nvcc.")
+    endif()
+
+    set(CMAKE_CUDA_ARCHITECTURES 89
+        CACHE STRING "CUDA architectures (75: RTX 20, 86: RTX 30, 89: RTX 40)")
 
     # 启用 CUDA
     enable_language(CUDA)
