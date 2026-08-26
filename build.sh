@@ -10,7 +10,7 @@ else
 fi
 
 cd "${BUILD_DIR}" && pwd 
-if [ $1 == "tensorrt" ]; then
+if [ "${1:-}" = "tensorrt" ]; then
   cmake .. -DCMAKE_BUILD_TYPE=MinSizeRel \
            -DCMAKE_INSTALL_PREFIX=./install \
            -DENABLE_TENSORRT=ON \
@@ -21,6 +21,7 @@ if [ $1 == "tensorrt" ]; then
 else
   cmake .. -DCMAKE_BUILD_TYPE=MinSizeRel \
            -DCMAKE_INSTALL_PREFIX=./install \
+           -DENABLE_TENSORRT=OFF \
            -DENABLE_TEST=ON
 fi
 
