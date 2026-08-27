@@ -50,4 +50,4 @@ test_lite_mobile_human_matting*
 test_lite_mobile_hair_seg*
 test_lite_face_parsing*
 test_lite_yolov6*
-test_lite_yolo26*
+test_lite_yolov26*

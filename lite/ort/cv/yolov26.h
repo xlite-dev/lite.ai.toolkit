@@ -2,19 +2,19 @@
 // Created by zhuohaoyang on 2026/8/26.
 //
 
-#ifndef LITE_AI_TOOLKIT_ORT_CV_YOLO26_H
-#define LITE_AI_TOOLKIT_ORT_CV_YOLO26_H
+#ifndef LITE_AI_TOOLKIT_ORT_CV_YOLOV26_H
+#define LITE_AI_TOOLKIT_ORT_CV_YOLOV26_H
 
 #include "lite/ort/core/ort_core.h"
 
 namespace ortcv
 {
-  class LITE_EXPORTS YOLO26 : public BasicOrtHandler
+  class LITE_EXPORTS YoloV26 : public BasicOrtHandler
   {
   public:
-    explicit YOLO26(const std::string &_onnx_path, unsigned int _num_threads = 1);
+    explicit YoloV26(const std::string &_onnx_path, unsigned int _num_threads = 1);
 
-    ~YOLO26() override = default;
+    ~YoloV26() override = default;
 
   private:
     typedef struct
@@ -43,4 +43,4 @@ namespace ortcv
   };
 }
 
-#endif //LITE_AI_TOOLKIT_ORT_CV_YOLO26_H
+#endif //LITE_AI_TOOLKIT_ORT_CV_YOLOV26_H
