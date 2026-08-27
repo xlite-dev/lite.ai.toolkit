@@ -146,10 +146,10 @@ void YOLO26::generate_bboxes(const ScaleParams &scale_params,
         !std::isfinite(x2) || !std::isfinite(y2))
       continue;
 
-    x1 = clip(x1, 0.f, static_cast<float>(img_width));
-    y1 = clip(y1, 0.f, static_cast<float>(img_height));
-    x2 = clip(x2, 0.f, static_cast<float>(img_width));
-    y2 = clip(y2, 0.f, static_cast<float>(img_height));
+    x1 = clip(x1, 0.f, static_cast<float>(img_width - 1));
+    y1 = clip(y1, 0.f, static_cast<float>(img_height - 1));
+    x2 = clip(x2, 0.f, static_cast<float>(img_width - 1));
+    y2 = clip(y2, 0.f, static_cast<float>(img_height - 1));
     if (x2 <= x1 || y2 <= y1) continue;
 
     types::Boxf box;
