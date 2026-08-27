@@ -6,7 +6,7 @@
 
 static void test_default()
 {
-  std::string onnx_path = "../../../examples/hub/onnx/cv/yolov26n.onnx";
+  std::string onnx_path = "../../../examples/hub/onnx/cv/yolov26n-640x640.onnx";
   std::string test_img_path = "../../../examples/lite/resources/test_lite_detection_1.jpg";
   std::string save_img_path = "../../../examples/logs/test_lite_yolov26_1.jpg";
 
@@ -30,7 +30,7 @@ static void test_default()
 static void test_onnxruntime()
 {
 #ifdef ENABLE_ONNXRUNTIME
-  std::string onnx_path = "../../../examples/hub/onnx/cv/yolov26n.onnx";
+  std::string onnx_path = "../../../examples/hub/onnx/cv/yolov26n-640x640.onnx";
   std::string test_img_path = "../../../examples/lite/resources/test_lite_detection_1.jpg";
   std::string save_img_path = "../../../examples/logs/test_lite_yolov26_2.jpg";
 
