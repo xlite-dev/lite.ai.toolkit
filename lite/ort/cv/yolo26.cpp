@@ -1,5 +1,5 @@
 //
-// Created by lite.ai.toolkit on 2026/8/26.
+// Created by zhuohaoyang on 2026/8/26.
 //
 
 #include "yolo26.h"
