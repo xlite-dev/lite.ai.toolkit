@@ -17,6 +17,7 @@ namespace trtcv{
     class LITE_EXPORTS TRTYoloV6;     // [5] * reference: https://github.com/meituan/YOLOv6
     class LITE_EXPORTS TRTYOLO5Face;     // [6] * reference: https://github.com/deepcam-cn/yolov5-face
     class LITE_EXPORTS TRTYOLOV11;
+    class LITE_EXPORTS TRTYoloV26;
 }
 
 namespace trtcv{
