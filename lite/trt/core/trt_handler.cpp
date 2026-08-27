@@ -16,9 +16,9 @@ BasicTRTHandler::BasicTRTHandler(const std::string &_trt_model_path, unsigned in
 BasicTRTHandler::~BasicTRTHandler() {
     // don't need free by manunly
     for (auto buffer : buffers) {
-        cudaFree(buffer);
+        if (buffer) cudaFree(buffer);
     }
-    cudaStreamDestroy(stream);
+    if (stream) cudaStreamDestroy(stream);
 }
 
 

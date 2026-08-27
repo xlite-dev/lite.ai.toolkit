@@ -17,7 +17,7 @@ namespace trtcore{
 
         Logger trt_logger;
         std::vector<void*> buffers;
-        cudaStream_t stream;
+        cudaStream_t stream = nullptr;
 
         std::vector<int64_t> input_node_dims;
         std::vector<std::vector<int64_t>> output_node_dims;
