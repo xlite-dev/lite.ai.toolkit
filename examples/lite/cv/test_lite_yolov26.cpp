@@ -52,10 +52,36 @@ static void test_onnxruntime()
 #endif
 }
 
+static void test_tensorrt()
+{
+#ifdef ENABLE_TENSORRT
+  std::string engine_path = "../../../examples/hub/trt/yolov26n_fp32.engine";
+  std::string test_img_path = "../../../examples/lite/resources/test_lite_detection_1.jpg";
+  std::string save_img_path = "../../../examples/logs/test_lite_yolov26_1_trt.jpg";
+
+  // 3. Test Specific Engine TensorRT
+  lite::trt::cv::detection::YOLOV26 *yolov26 =
+      new lite::trt::cv::detection::YOLOV26(engine_path);
+
+  std::vector<lite::types::Boxf> detected_boxes;
+  cv::Mat img_bgr = cv::imread(test_img_path);
+  yolov26->detect(img_bgr, detected_boxes);
+
+  lite::utils::draw_boxes_inplace(img_bgr, detected_boxes);
+
+  cv::imwrite(save_img_path, img_bgr);
+
+  std::cout << "TensorRT Version Detected Boxes Num: " << detected_boxes.size() << std::endl;
+
+  delete yolov26;
+#endif
+}
+
 static void test_lite()
 {
   test_default();
   test_onnxruntime();
+  test_tensorrt();
 }
 
 int main(__unused int argc, __unused char *argv[])
