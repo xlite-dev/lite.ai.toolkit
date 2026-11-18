@@ -35,7 +35,7 @@
 ## 📖 News 🔥🔥
 <div id="news"></div>
 
-- Most of my time now is focused on **LLM/VLM** Inference. Now, [lite.ai.toolkit](https://github.com/xlite-dev/lite.ai.toolkit) ![](https://img.shields.io/github/stars/xlite-dev/lite.ai.toolkit.svg?style=social) is mainly maintained by 🎉[@wangzijian1010](https://github.com/wangzijian1010).
+Most of my time now is focused on **LLM/DiT** Infra. Now, [lite.ai.toolkit](https://github.com/xlite-dev/lite.ai.toolkit) is mainly maintained by 🎉[@wangzijian1010](https://github.com/wangzijian1010).
 
 ## Citations 🎉🎉
 ```BibTeX
